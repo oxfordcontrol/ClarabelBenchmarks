@@ -28,11 +28,9 @@ b = 1e-1
 γ = 1.0;
 # model = JuMP.Model(Mosek.Optimizer)
 
-model = JuMP.Model(Clarabel.Optimizer)
+model = JuMP.Model(ClarabelRs.Optimizer)
 
 set_optimizer_attribute(model, "direct_solve_method", :qdldl)
-set_optimizer_attribute(model, "tol_gap_abs", 1e-8)
-set_optimizer_attribute(model, "tol_gap_rel", 1e-8)
 # set_optimizer_attribute(model, "min_primaldual_step_length", 1e-1)
 
 @variable(model, x[1:n])

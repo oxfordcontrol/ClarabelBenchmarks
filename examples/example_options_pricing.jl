@@ -31,12 +31,10 @@ end
 for K in [40, 45, 50] #[30, 35, 40, 45, 50]
     for cone = [SDSOSCone()]  #[SOSCone(),SDSOSCone(),DSOSCone()]
 
-        println("Cone is type : ", typeof(cone))
-        println("K = ", K)
-
         options_pricing_test(cone,K)
+    
     end
-end 
+end
 
 
 # sos_options_pricing_test(optimizer, config)   = options_pricing_test(optimizer, config, SOSCone(), K, sdsos_cosdsos_exp)

@@ -66,7 +66,7 @@ n = n_data
 #####################################################
 # m = JuMP.Model(ECOS.Optimizer)
 
-m = JuMP.Model(Clarabel.Optimizer)
+m = JuMP.Model(ClarabelRs.Optimizer)
 set_optimizer_attribute(m, "direct_solve_method", :qdldl)
 set_optimizer_attribute(m, "static_regularization_constant", 1e-8)
 set_optimizer_attribute(m, "tol_gap_abs", 1e-8)

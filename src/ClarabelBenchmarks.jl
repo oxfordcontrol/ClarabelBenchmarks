@@ -10,6 +10,7 @@ module ClarabelBenchmarks
     include("./benchmarks/maros/include.jl")
     include("./benchmarks/cblib/include.jl")
     include("./benchmarks/lp/include.jl")
+    include("./benchmarks/qp/include.jl")
     include("./benchmarks/socp/include.jl")
     include("./benchmarks/sos/include.jl")
     

@@ -4,7 +4,7 @@
 using JuMP, DataFrames
 
 # main problem library is stored here %PJG: Should be const
-const PROBLEMS = Dict{String,Dict{String,Function}}()
+PROBLEMS = Dict{String,Dict{String,Function}}()
 
 #macro for bringing problems into PROBLEMS.   Taken from Convex.jl
 

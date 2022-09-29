@@ -3,15 +3,28 @@
 # Example script for running the tests in this repo 
 
 # include any solvers you want to test 
-using Clarabel, ECOS, DataFrames
+using Clarabel, ClarabelBenchmarks, ECOS, DataFrames
+
+# Run solvers on the "dummy" set to force compilation 
+# arguments are explained further down 
+
+result = ClarabelBenchmarks.run_benchmarks(
+    Clarabel.Optimizer; class = ["dummy"], verbose=false)
+
+result = ClarabelBenchmarks.run_benchmarks(
+    ECOS.Optimizer; class = ["dummy"], exclude = [r"pow"], verbose=false)
 
 # define the problem classes you want to solve.  
-#Default is everything. Regex works here.
+# Default is everything. Regex works here.
+#
+# You can see the available classes using 
+# >> print(keys(ClarabelBenchmarks.PROBLEMS))
+
 class = ["lp","socp"]
 
 # name specific tests to exclude regardless of 
 # the class.   Regex works here.
-exclude=[r"sdp_options"]
+exclude=[r"sdp_options", r"dummy"]
 
 #to compare solvers, make a DataFrame here and 
 #then concatenate the results 

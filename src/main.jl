@@ -53,10 +53,6 @@ function run_benchmarks(
             #skip test level exclusions 
             any(occursin.(exclude, Ref(test_name))) && continue
 
-            #create an empty model and pass to solver 
-            model = Model(optimizer_factory; settings...)
-            if(verbose == false); set_silent(model); end
-
             #tell me which problem I'm solving, even if not verbose 
             if(verbose)
                 println("\n\nSolving : ", test_name,"\n")
@@ -64,12 +60,19 @@ function run_benchmarks(
                 println("Solving : ", test_name)
             end
 
+            #create an empty model and pass to solver 
+            model = Model(optimizer_factory)
+            for (key,val) in settings 
+                set_optimizer_attribute(model, string(key), val)
+            end
+            if(verbose == false); set_silent(model); end
+
             #solve and log results
             PROBLEMS[classkey][test_name](model)
             groups[classkey][test_name] = solution_summary(model)
         end
     end
-    return groups
+    return post_process_benchmarks(groups)
 end
 
 
@@ -104,9 +107,6 @@ function post_process_results_group(group)
     status      = map(s->string(s.termination_status), solutions)
     primal_cost =  map(s->s.objective_value, solutions)
     dual_cost   =  map(s->s.dual_objective_value, solutions)
-
-    println(typeof(dual_cost))
-    println((dual_cost))
 
     df = DataFrame(
        "problem" => problems, 

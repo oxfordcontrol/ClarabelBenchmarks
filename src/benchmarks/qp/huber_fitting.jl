@@ -4,10 +4,10 @@ using Random
 
 function huber_fitting(model, n)
 
+    rng = Random.MersenneTwister(271324 + n)
+
     p = 0.125
     m = round(Int,1.5 * n)
-
-    rng = Random.MersenneTwister(271324 + m*n)
 
     A = sprandn(rng,m,n,0.125)
 

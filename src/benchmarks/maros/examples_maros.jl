@@ -2,7 +2,7 @@ function maros_generic(
     model,
     maros_problem
 )
-    (P, c, Aeq, beq, Aineq, bineq) = maros_load(maros_problem)
+    (P, c, Aineq, bineq, Aeq, beq) = maros_load(maros_problem)
     @variable(model, x[1:length(c)])
     @constraint(model, c1, Aineq*x .<= bineq)
     @constraint(model, c2, Aeq*x .== beq)

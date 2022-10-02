@@ -32,7 +32,7 @@ end
 
 #generate problems according to problem type and size 
 
-for n in [10, 100, 1000]
+for n in [10, 100, 500, 1000]
     fcn_name = Symbol("qp_huber_fitting_n_" * string(n))
     @eval begin
         @add_problem qp function $fcn_name(

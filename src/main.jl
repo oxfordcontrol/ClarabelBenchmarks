@@ -2,6 +2,8 @@
 # which is available under an MIT license (see LICENSE).
 
 using JuMP, DataFrames
+using MathOptInterface
+const MOI = MathOptInterface
 
 # main problem library is stored here %PJG: Should be const
 PROBLEMS = Dict{String,Dict{String,Function}}()

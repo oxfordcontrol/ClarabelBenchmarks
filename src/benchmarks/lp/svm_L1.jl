@@ -7,15 +7,14 @@ Ported from python example implementation provided by Philipp Schiele
 """
 
 
-@add_problem lp function lp_svm_classifier(
+@add_problem lp function lp_svm_L1(
     model,
+    n = 10,
+    m = 50*n,
+    density = 0.2,
 )
+    rng = Random.MersenneTwister(271324 + m + n)
 
-    rng = Random.MersenneTwister(271324)
-
-    n = 10
-    m = 600
-    density= 0.2
     beta_true = randn(rng, n, 1)
     idxs = sample(rng, 1:n, Int((1 - density) * n); replace = false)
     for ind in idxs
@@ -38,3 +37,17 @@ Ported from python example implementation provided by Philipp Schiele
     optimize!(model)
 
 end
+
+#generate problems according to problem size
+
+for n in [10, 20, 50, 100]
+    fcn_name = Symbol("lp_svm_L1_n_" * string(n))
+    @eval begin
+        @add_problem lp function $fcn_name(
+            model,
+        )
+            return lp_svm_L1(model,$n)
+        end
+    end
+end
+

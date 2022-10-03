@@ -30,7 +30,7 @@ function huber_fitting(model, n)
 end
 
 
-#generate problems according to problem type and size 
+#generate problems according to problem size 
 
 for n in [10, 100, 500, 1000]
     fcn_name = Symbol("qp_huber_fitting_n_" * string(n))

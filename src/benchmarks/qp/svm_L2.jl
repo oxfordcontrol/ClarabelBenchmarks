@@ -6,7 +6,7 @@
 
 using Random
 
-function svm_L2(model, n)
+function qp_svm_L2(model, n)
 
     rng = Random.MersenneTwister(271324 + n)
 
@@ -33,12 +33,12 @@ end
 #generate problems according to problem type and size 
 
 for n in [10, 100, 500]
-    fcn_name = Symbol("svm_L2_n_" * string(n))
+    fcn_name = Symbol("qp_svm_L2_n_" * string(n))
     @eval begin
         @add_problem qp function $fcn_name(
             model,
         )
-            return svm_L2(model,$n)
+            return qp_svm_L2(model,$n)
         end
     end
 end

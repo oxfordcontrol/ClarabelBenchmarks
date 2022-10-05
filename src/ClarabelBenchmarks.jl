@@ -8,6 +8,7 @@ module ClarabelBenchmarks
 
     #add new categories and problems here
     include("./benchmarks/maros/include.jl")
+    include("./benchmarks/netlib/include.jl")
     include("./benchmarks/cblib/include.jl")
     include("./benchmarks/lp/include.jl")
     include("./benchmarks/qp/include.jl")

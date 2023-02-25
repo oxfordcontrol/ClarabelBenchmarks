@@ -9,16 +9,25 @@ coneMap = Dict(:Zero => MOI.Zeros, :Free => :Free,
 
 function cblib_get_test_names()
 
-    srcpath = joinpath(@__DIR__,"targets/")
-    #get CBLIB archive path and get names of data files
-    files = filter(endswith(".cbf.gz"), readdir(srcpath))
-    return [splitext(splitext(f)[1])[1] for f in files]
+    # This will return a vector of (group,filename) pairs
 
+    targets_path = joinpath(@__DIR__,"targets/")
+    groups       = readdir(targets_path)
+    pairs = [];
+
+    for group = groups
+        srcpath = joinpath(targets_path,group)
+
+        #gets the name of the data files in this group
+        files = filter(endswith(".cbf.gz"), readdir(srcpath))
+        append!(pairs, [ (group => splitext(splitext(f)[1])[1]) for f in files])
+    end
+    return pairs
 end
 
-function cblib_load(test_name)
+function cblib_load(group, test_name)
 
-    srcpath = joinpath(@__DIR__,"targets/")
+    srcpath = joinpath(@__DIR__,"targets/",group)
     file = joinpath(srcpath,test_name * ".cbf.gz")
     data = readcbfdata(file)
     return data
@@ -43,7 +52,6 @@ function cblib_fill_model(model,data)
     #Tackling constraint
     for i in eachindex(con_cones)
         cur_cone = con_cones[i]
-        println("Constraint cone = ",(cur_cone[1]))
 
         if coneMap[cur_cone[1]] == :Free
             continue
@@ -58,8 +66,6 @@ function cblib_fill_model(model,data)
 
     for i in eachindex(var_cones)
         cur_var = var_cones[i]
-        println("Variable cone = ",(cur_var[1]))
-
 
         if coneMap[cur_var[1]] == :Free
             continue

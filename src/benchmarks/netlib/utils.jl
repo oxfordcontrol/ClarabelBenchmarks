@@ -33,91 +33,95 @@ function netlib_infeasible_load(test_name)
     srcpath = joinpath(@__DIR__,"./infeasibleLP")
     file = joinpath(srcpath,test_name * ".mat")
     probdata = matread(file)
-    conic_data = data_infeasible_conic_form(probdata)
+    conic_data = NETLIButils.data_infeasible_conic_form(probdata)
 
     return conic_data
 end
 
 
-function dropinfs(A,b)
+module NETLIButils 
 
-    b = b[:]
-    finidx = findall(<(5e19), abs.(b))
-    b = b[finidx]
-    A = A[finidx,:]
-    return A,b
+    function dropinfs(A,b)
 
-end
+        b = b[:]
+        finidx = findall(<(5e19), abs.(b))
+        b = b[finidx]
+        A = A[finidx,:]
+        return A,b
 
-# LP form
-#   min     c'x
-# s.t.      Ax = b
-#         l ≤ x ≤ u
-function data_lp_form(vars)
+    end
 
-    A = vars["A"]
-    b = vars["b"][:]
-    l = vars["lo"][:]
-    u = vars["hi"][:]
-    c = vars["c"][:]
+    # LP form
+    #   min     c'x
+    # s.t.      Ax = b
+    #         l ≤ x ≤ u
+    function data_lp_form(vars)
 
-    return c,b,A,l,u
-end
+        A = vars["A"]
+        b = vars["b"][:]
+        l = vars["lo"][:]
+        u = vars["hi"][:]
+        c = vars["c"][:]
 
-function data_conic_form(vars)
+        return c,b,A,l,u
+    end
 
-    c,b,A,l,u = data_lp_form(vars)
-    n = size(A,2)
+    function data_infeasible_lp_form(vars)
 
-    #separate into equalities and inequalities
-    Ai = spdiagm(0 => ones(n))
-    eqidx = l .== u
-    Aeq = [A; Ai[eqidx,:]]
-    beq = [b; l[eqidx]]
+        vars = vars["Problem"]
+        A = vars["A"]
+        b = vars["b"][:]
+        l = vars["lo"][:]
+        u = vars["hi"][:]
+        c = vars["c"][:]
 
-    #make into single constraint
-    Aineq = Ai[.!eqidx,:]
-    lineq = l[.!eqidx,:]
-    uineq = u[.!eqidx,:]
-    Aineq = [Aineq; -Aineq]
-    bineq = [uineq;-lineq]
-    Aineq,bineq = dropinfs(Aineq,bineq)
+        return c,b,A,l,u
+    end
 
-    return c,Aineq,bineq,Aeq,beq
+    function data_conic_form(vars)
 
-end
+        c,b,A,l,u = data_lp_form(vars)
+        n = size(A,2)
 
-function data_infeasible_lp_form(vars)
+        #separate into equalities and inequalities
+        Ai = spdiagm(0 => ones(n))
+        eqidx = l .== u
+        Aeq = [A; Ai[eqidx,:]]
+        beq = [b; l[eqidx]]
 
-    vars = vars["Problem"]
-    A = vars["A"]
-    b = vars["b"][:]
-    l = vars["lo"][:]
-    u = vars["hi"][:]
-    c = vars["c"][:]
+        #make into single constraint
+        Aineq = Ai[.!eqidx,:]
+        lineq = l[.!eqidx,:]
+        uineq = u[.!eqidx,:]
+        Aineq = [Aineq; -Aineq]
+        bineq = [uineq;-lineq]
+        Aineq,bineq = dropinfs(Aineq,bineq)
 
-    return c,b,A,l,u
-end
+        return c,Aineq,bineq,Aeq,beq
 
-function data_infeasible_conic_form(vars)
+    end
 
-    c,b,A,l,u = data_infeasible_lp_form(vars)
-    n = size(A,2)
+    function data_infeasible_conic_form(vars)
 
-    #separate into equalities and inequalities
-    Ai = spdiagm(0 => ones(n))
-    eqidx = l .== u
-    Aeq = [A; Ai[eqidx,:]]
-    beq = [b; l[eqidx]]
+        c,b,A,l,u = data_infeasible_lp_form(vars)
+        n = size(A,2)
 
-    #make into single constraint
-    Aineq = Ai[.!eqidx,:]
-    lineq = l[.!eqidx,:]
-    uineq = u[.!eqidx,:]
-    Aineq = [Aineq; -Aineq]
-    bineq = [uineq;-lineq]
-    Aineq,bineq = dropinfs(Aineq,bineq)
+        #separate into equalities and inequalities
+        Ai = spdiagm(0 => ones(n))
+        eqidx = l .== u
+        Aeq = [A; Ai[eqidx,:]]
+        beq = [b; l[eqidx]]
 
-    return c,Aineq,bineq,Aeq,beq
+        #make into single constraint
+        Aineq = Ai[.!eqidx,:]
+        lineq = l[.!eqidx,:]
+        uineq = u[.!eqidx,:]
+        Aineq = [Aineq; -Aineq]
+        bineq = [uineq;-lineq]
+        Aineq,bineq = dropinfs(Aineq,bineq)
 
-end
+        return c,Aineq,bineq,Aeq,beq
+
+    end
+
+end #module

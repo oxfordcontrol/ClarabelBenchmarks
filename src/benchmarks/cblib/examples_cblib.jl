@@ -1,22 +1,24 @@
 function cblib_generic(
     model,
+    group,
     cblib_problem
 )
-    data = cblib_load(cblib_problem)
+    data = cblib_load(group, cblib_problem)
     cblib_fill_model(model,data)
-    #optimize!(model)
+    optimize!(model)
 
     return nothing
 
 end
 
-for test_name in cblib_get_test_names()
-    fcn_name = Symbol("cblib_" * test_name)
+for group_test_pair in cblib_get_test_names()
+    group, test_name = (group_test_pair[1],group_test_pair[2])
+    fcn_name = Symbol("cblib_" * group* "_" * test_name)
     @eval begin
-            @add_problem cblib function $fcn_name(
+            @add_problem $(Symbol("cblib_" * group)) function $fcn_name(
                 model,
             )
-                return cblib_generic(model,$test_name)
+                return cblib_generic(model, $group, $test_name)
             end
     end
 end 

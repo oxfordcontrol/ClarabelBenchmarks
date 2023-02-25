@@ -1,3 +1,10 @@
+These examples are sourced from : https://sparse.tamu.edu/LPnetlib
+Information from the link above follows:
+
+
+
+NETLIB Linear Programming problems, www.netlib.org.
+
 matrices/LPnetlib/README.  Tim Davis, May 15, 1997. (davis :at the domain:
 cise.ufl.edu)
 

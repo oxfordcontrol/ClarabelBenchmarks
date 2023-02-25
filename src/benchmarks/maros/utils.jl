@@ -14,58 +14,62 @@ function maros_load(test_name)
     srcpath = joinpath(@__DIR__,"targets/mat")
     file = joinpath(srcpath,test_name * ".mat")
     probdata = matread(file)
-    conic_data = data_conic_form(probdata)
+    conic_data = MAROSutils.data_conic_form(probdata)
 
     return conic_data
 end
 
 
-function dropinfs(A,b)
+module MAROSutils
 
-    b = b[:]
-    finidx = findall(<(5e19), abs.(b))
-    b = b[finidx]
-    A = A[finidx,:]
-    return A,b
+    function dropinfs(A,b)
 
-end
+        b = b[:]
+        finidx = findall(<(5e19), abs.(b))
+        b = b[finidx]
+        A = A[finidx,:]
+        return A,b
 
-function data_osqp_form(vars)
+    end
 
-    n = Int(vars["n"])
-    m = Int(vars["m"])
-    A   = vars["A"]
-    P   = vars["P"]
-    c   = vars["q"][:]
-    c0  = vars["r"]
-    l   = vars["l"][:]
-    u   = vars["u"][:]
+    function data_osqp_form(vars)
 
-    #force a true double transpose
-    #to ensure data is sorted within columns
-    A = (A'.*1)'.*1
-    P = (P'.*1)'.*1
+        n = Int(vars["n"])
+        m = Int(vars["m"])
+        A   = vars["A"]
+        P   = vars["P"]
+        c   = vars["q"][:]
+        c0  = vars["r"]
+        l   = vars["l"][:]
+        u   = vars["u"][:]
 
-    return P,c,A,l,u
-end
+        #force a true double transpose
+        #to ensure data is sorted within columns
+        A = (A'.*1)'.*1
+        P = (P'.*1)'.*1
 
-function data_conic_form(vars)
+        return P,c,A,l,u
+    end
 
-    P,c,A,l,u = data_osqp_form(vars)
+    function data_conic_form(vars)
 
-    #separate into equalities and inequalities
-    eqidx = l .== u
-    Aeq = A[eqidx,:]
-    beq = l[eqidx]
+        P,c,A,l,u = data_osqp_form(vars)
 
-    #make into single constraint
-    Aineq = A[.!eqidx,:]
-    lineq = l[.!eqidx,:]
-    uineq = u[.!eqidx,:]
-    Aineq = [Aineq; -Aineq]
-    bineq = [uineq;-lineq]
-    Aineq,bineq = dropinfs(Aineq,bineq)
+        #separate into equalities and inequalities
+        eqidx = l .== u
+        Aeq = A[eqidx,:]
+        beq = l[eqidx]
 
-    return P,c,Aineq,bineq,Aeq,beq
+        #make into single constraint
+        Aineq = A[.!eqidx,:]
+        lineq = l[.!eqidx,:]
+        uineq = u[.!eqidx,:]
+        Aineq = [Aineq; -Aineq]
+        bineq = [uineq;-lineq]
+        Aineq,bineq = dropinfs(Aineq,bineq)
 
-end
+        return P,c,Aineq,bineq,Aeq,beq
+
+    end
+
+end #end module

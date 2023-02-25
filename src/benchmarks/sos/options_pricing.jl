@@ -37,7 +37,7 @@ conemap = Dict("socp" => SDSOSCone(),
 
 #generate problems according to problem type and size 
 
-for K in [30, 35, 40, 45, 50]
+for K in [5, 10, 20, 30, 35, 40, 45, 50]
     for group in keys(conemap)
     group_name = Symbol(group)
     fcn_name = Symbol(group * "_options_pricing_K_" * string(K))

@@ -4,7 +4,7 @@ function cblib_generic(
 )
     data = cblib_load(cblib_problem)
     cblib_fill_model(model,data)
-    optimize!(model)
+    #optimize!(model)
 
     return nothing
 

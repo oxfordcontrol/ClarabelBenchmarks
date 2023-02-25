@@ -43,6 +43,7 @@ function cblib_fill_model(model,data)
     #Tackling constraint
     for i in eachindex(con_cones)
         cur_cone = con_cones[i]
+        println("Constraint cone = ",(cur_cone[1]))
 
         if coneMap[cur_cone[1]] == :Free
             continue
@@ -57,6 +58,8 @@ function cblib_fill_model(model,data)
 
     for i in eachindex(var_cones)
         cur_var = var_cones[i]
+        println("Variable cone = ",(cur_var[1]))
+
 
         if coneMap[cur_var[1]] == :Free
             continue

@@ -31,7 +31,7 @@ end
 
     @variable(model, x[1:3])
     @constraint(model, x in SecondOrderCone())
-    @objective(model, Min, (x[1] + x[2])^2)
+    @objective(model, Min, x[1]^2 + x[2]^2 + x[1] + x[2])
     optimize!(model)
 
     return nothing

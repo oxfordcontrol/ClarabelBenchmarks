@@ -5,7 +5,7 @@ using JuMP, DataFrames
 using MathOptInterface
 const MOI = MathOptInterface
 
-# main problem library is stored here %PJG: Should be const
+# main problem library is stored here 
 PROBLEMS = Dict{String,Dict{String,Function}}()
 
 #macro for bringing problems into PROBLEMS.   Taken from Convex.jl
@@ -40,6 +40,7 @@ function run_benchmarks(
     settings::Dict = Dict{Symbol,Any}(),
     verbose = true,
     exclude::Vector{Regex} = Regex[],
+    include::Union{Nothing,Vector{String},Vector{Regex}} = Regex[],
     class::Union{Nothing,Vector{String},Vector{Regex}} = Regex[r".*"],
 )
     groups = Dict{String,Dict}()
@@ -54,6 +55,16 @@ function run_benchmarks(
 
             #skip test level exclusions 
             any(occursin.(exclude, Ref(test_name))) && continue
+
+            #skip if an explicit include list is provided and 
+            #this test is not a match 
+            if(!isempty(include))
+                if(isa(include,Vector{String}))
+                    !any(in(test_name, include)) && continue
+                else
+                    !any(occursin.(include, Ref(test_name))) && continue
+                end
+            end
 
             #tell me which problem I'm solving, even if not verbose 
             if(verbose)
@@ -70,8 +81,12 @@ function run_benchmarks(
             if(verbose == false); set_silent(model); end
 
             #solve and log results
-            PROBLEMS[classkey][test_name](model)
-            groups[classkey][test_name] = solution_summary(model)
+            try
+                PROBLEMS[classkey][test_name](model)
+                groups[classkey][test_name] = solution_summary(model)
+            catch
+                groups[classkey][test_name] = solution_summary(Model(optimizer_factory))
+            end
         end
     end
     return post_process_benchmarks(groups)

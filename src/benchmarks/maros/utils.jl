@@ -25,9 +25,10 @@ module MAROSutils
     function dropinfs(A,b)
 
         b = b[:]
-        finidx = findall(<(5e19), abs.(b))
-        b = b[finidx]
-        A = A[finidx,:]
+        finidx = abs.(b) .< 1e20 * (1-eps(Float64))
+        #b = b[finidx]
+        #A = A[finidx,:]
+        #println("Dropping ", sum(.!finidx))
         return A,b
 
     end

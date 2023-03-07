@@ -1,4 +1,4 @@
-using Convex, Clarabel, ClarabelRs, Test
+using Convex, Clarabel, Test
 solver = Clarabel
 
 @testset "Clarabel" begin

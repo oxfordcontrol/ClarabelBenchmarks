@@ -15,7 +15,7 @@ using JuMP
     price_scenarios = randn(rng, m, n)
     forward_price_scenarios = randn(rng, m, n)
     asset_energy_limits = randn(rng, n, 2)
-    asset_energy_limits[:,2] .= asset_energy_limits[:,1] .+ rand(n)
+    asset_energy_limits[:,2] .= asset_energy_limits[:,1] .+ rand(rng, n)
     bid_curve_prices = randn(rng, n, k)
     cvar_prob = 0.95
     cvar_kappa = 2.0

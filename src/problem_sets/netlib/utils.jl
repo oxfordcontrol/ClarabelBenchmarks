@@ -41,15 +41,7 @@ end
 
 module NETLIButils 
 
-    function dropinfs(A,b)
-
-        b = b[:]
-        finidx = findall(<(5e19), abs.(b))
-        b = b[finidx]
-        A = A[finidx,:]
-        return A,b
-
-    end
+using ClarabelBenchmarks
 
     # LP form
     #   min     c'x
@@ -95,7 +87,7 @@ module NETLIButils
         uineq = u[.!eqidx,:]
         Aineq = [Aineq; -Aineq]
         bineq = [uineq;-lineq]
-        Aineq,bineq = dropinfs(Aineq,bineq)
+        Aineq,bineq = ClarabelBenchmarks.dropinfs(Aineq,bineq)
 
         return c,Aineq,bineq,Aeq,beq
 
@@ -118,7 +110,7 @@ module NETLIButils
         uineq = u[.!eqidx,:]
         Aineq = [Aineq; -Aineq]
         bineq = [uineq;-lineq]
-        Aineq,bineq = dropinfs(Aineq,bineq)
+        Aineq,bineq = dropinfs(Aineq,bineq; thresh = 5e19)
 
         return c,Aineq,bineq,Aeq,beq
 

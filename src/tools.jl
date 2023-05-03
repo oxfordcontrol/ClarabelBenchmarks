@@ -42,15 +42,26 @@ function run_benchmarks(
     exclude::Vector{Regex} = Regex[],
     include::Union{Nothing,Vector{String},Vector{Regex}} = Regex[],
     class::Union{Nothing,Vector{String},Vector{Regex}} = Regex[r".*"],
+    precompile::Bool = true,
 )
+
+    #run all of the dummy problems to force compilation
+    if precompile
+        run_dummy_problems(optimizer_factory)
+    end
+
     groups = Dict{String,Dict}()
     for classkey in keys(PROBLEMS)
 
-        # skip if class is not in class list 0or otherwise excluded 
-        any(occursin.(exclude, Ref(classkey))) && continue
-        any(occursin.(class,   Ref(classkey))) || continue
-
+        # skip if class is not in class list or is excluded 
+        if any(occursin.(exclude, Ref(classkey))) 
+            continue
+        elseif !any(occursin.(class, Ref(classkey))) 
+            continue
+        end   
+            
         groups[classkey] = Dict()
+
         for test_name in keys(PROBLEMS[classkey])
 
             #skip test level exclusions 
@@ -58,7 +69,7 @@ function run_benchmarks(
 
             #skip if an explicit include list is provided and 
             #this test is not a match 
-            if(!isempty(include))
+            if !isempty(include) 
                 if(isa(include,Vector{String}))
                     !any(in(test_name, include)) && continue
                 else
@@ -92,6 +103,19 @@ function run_benchmarks(
     return post_process_benchmarks(groups)
 end
 
+function run_dummy_problems(optimizer_factory)
+
+    for test = values(ClarabelBenchmarks.PROBLEMS["dummy"])
+        #try to solve.   If it fails, just move on
+        #since we're just trying to force compilation
+        model = Model(optimizer_factory)
+        set_silent(model)
+        try 
+            test(model)
+        catch; 
+        end
+    end
+end
 
 
 function post_process_benchmarks(groups)
@@ -140,6 +164,14 @@ function post_process_results_group(group)
 end
 
 
+function dropinfs(A,b; thresh = 5e19)
 
+    b = b[:]
+    finidx = abs.(b) .< thresh
+    b = b[finidx]
+    A = A[finidx,:]
+    return A,b
+
+end
 
 

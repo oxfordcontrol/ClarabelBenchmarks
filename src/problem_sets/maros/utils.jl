@@ -22,16 +22,7 @@ end
 
 module MAROSutils
 
-    function dropinfs(A,b)
-
-        b = b[:]
-        finidx = abs.(b) .< 1e20 * (1-eps(Float64))
-        #b = b[finidx]
-        #A = A[finidx,:]
-        #println("Dropping ", sum(.!finidx))
-        return A,b
-
-    end
+    using ClarabelBenchmarks
 
     function data_osqp_form(vars)
 
@@ -46,8 +37,8 @@ module MAROSutils
 
         #force a true double transpose
         #to ensure data is sorted within columns
-        A = (A'.*1)'.*1
-        P = (P'.*1)'.*1
+        A = (A'.*1.)'.*1.
+        P = (P'.*1.)'.*1.
 
         return P,c,A,l,u
     end
@@ -67,7 +58,9 @@ module MAROSutils
         uineq = u[.!eqidx,:]
         Aineq = [Aineq; -Aineq]
         bineq = [uineq;-lineq]
-        Aineq,bineq = dropinfs(Aineq,bineq)
+
+        thresh = 1e20 * (1-eps(Float64))
+        Aineq,bineq = ClarabelBenchmarks.dropinfs(Aineq,bineq; thresh=thresh)
 
         return P,c,Aineq,bineq,Aeq,beq
 

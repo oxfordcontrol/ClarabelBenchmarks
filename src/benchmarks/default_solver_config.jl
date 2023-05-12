@@ -10,14 +10,13 @@ SOLVER_CONFIG = Dict{Symbol,SettingsDict}()
 SOLVER_CONFIG[:Clarabel] = SettingsDict(
 )
 
-#Clarabel (Julia version )
+#Clarabel (Rust version )
 SOLVER_CONFIG[:ClarabelRs] = SettingsDict(
 )
 
 #Gurobi 
 SOLVER_CONFIG[:Gurobi] = SettingsDict(
     :presolve => false,
-    :threads => 1,
 )
 
 #ECOS
@@ -25,7 +24,7 @@ SOLVER_CONFIG[:ECOS] = SettingsDict(
 )
 
 #MOSEK
-SOLVER_CONFIG[:MosekTools] = SettingsDict(
+SOLVER_CONFIG[:Mosek] = SettingsDict(
 )
 
 #OSQP
@@ -36,3 +35,10 @@ SOLVER_CONFIG[:OSQP] = SettingsDict(
 SOLVER_CONFIG[:SCS] = SettingsDict(
 )
 
+#HiGHS
+SOLVER_CONFIG[:HiGHS] = SettingsDict(
+)
+
+#Hypatia
+SOLVER_CONFIG[:Hypatia] = SettingsDict(
+)

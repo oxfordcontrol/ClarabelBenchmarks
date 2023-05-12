@@ -3,10 +3,8 @@ function cblib_generic(
     group,
     cblib_problem
 )
-    println("group = ", group)
-    println("cblib_problem = ", cblib_problem)
     cblib_load(model, group, cblib_problem)
-    optimize!(t)
+    optimize!(model)
 
     return nothing
 

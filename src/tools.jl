@@ -34,14 +34,14 @@ macro add_problem(prefix, q)
     end
 end
 
-
-function run_benchmarks(
+function run_benchmarks_inner(
     optimizer_factory;
     settings::Dict = Dict{Symbol,Any}(),
     verbose = true,
     exclude::Vector{Regex} = Regex[],
     include::Union{Nothing,Vector{String},Vector{Regex}} = Regex[],
     class::Union{Nothing,Vector{String},Vector{Regex}} = Regex[r".*"],
+    time_limit::Float64 = Inf,
     precompile::Bool = true,
 )
 
@@ -89,13 +89,22 @@ function run_benchmarks(
             for (key,val) in settings 
                 set_optimizer_attribute(model, string(key), val)
             end
-            if(verbose == false); set_silent(model); end
+            if(verbose == false); set_silent(model); 
+            else unset_silent(model); 
+            end
+
+            #not all solver support setting time limits. Looking at you, ECOS.
+            try
+                set_time_limit_sec(model, time_limit)
+            catch
+            end
 
             #solve and log results
             try
                 PROBLEMS[classkey][test_name](model)
                 groups[classkey][test_name] = solution_summary(model)
             catch
+                #if solver failed, get a summary for a blank model
                 groups[classkey][test_name] = solution_summary(Model(optimizer_factory))
             end
         end
@@ -107,7 +116,9 @@ function run_dummy_problems(optimizer_factory)
 
     for test = values(ClarabelBenchmarks.PROBLEMS["dummy"])
         #try to solve.   If it fails, just move on
-        #since we're just trying to force compilation
+        #since we're just trying to force compilation.
+        #note solvers will fail on these problems if they 
+        #don't support the necessary cone types
         model = Model(optimizer_factory)
         set_silent(model)
         try 
@@ -174,4 +185,58 @@ function dropinfs(A,b; thresh = 5e19)
 
 end
 
+function run_benchmarks!(df, solvers, class; exclude = Regex[], time_limit = Inf, verbose = false)
 
+    for package in solvers 
+
+        #skip if already run for this solver
+        if(!isempty(df) && String(Symbol(package)) ∈ df.solver)
+            println("Found results for ", package)
+            continue
+        end
+
+        println("Solving with ", package)
+
+        settings = ClarabelBenchmarks.SOLVER_CONFIG[Symbol(package)]
+        result = ClarabelBenchmarks.run_benchmarks_inner(
+            package.Optimizer; 
+            settings = settings,
+            class = class,
+            verbose = false,
+            exclude = exclude,
+            precompile = true,
+            time_limit = time_limit)
+
+        allowmissing!(result)
+        df = [df;result]
+    end
+
+    sort!(df,[:group, :problem])
+end
+
+
+function bench_common(filename, solvers, class; exclude = Regex[], time_limit = Inf, verbose = false)
+    
+    (filedir,filename)  = splitdir(filename)
+    (filename,_fileext) = splitext(filename)
+    
+    savefile = joinpath((filedir,"results",filename * ".jld2"))
+
+    if isfile(savefile)
+        println("Loading benchmark data from: ", savefile)
+        df = load(savefile)["df"]
+    else 
+        println("Saving benchmark data to: ", savefile)
+        df = DataFrame()
+    end
+
+    df = run_benchmarks!(df, solvers, class; 
+                    exclude = exclude, 
+                    time_limit = time_limit, 
+                    verbose = verbose)
+
+    jldsave(savefile; df)   
+
+    return df
+
+end

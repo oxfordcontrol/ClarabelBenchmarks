@@ -13,6 +13,7 @@ function cblib_get_test_names()
 
     targets_path = joinpath(@__DIR__,"targets/")
     groups       = readdir(targets_path)
+    groups       = filter(x->!contains(x,"."),groups)
     pairs = [];
 
     for group = groups
@@ -31,7 +32,7 @@ function cblib_load(model, group, test_name)
     srcpath = joinpath(@__DIR__,"targets/",group)
     file = joinpath(srcpath,test_name * ".cbf.gz")
     println("file = ", file)
-    MathOptInterface.read_from_file(model,file)
+    MathOptInterface.read_from_file(model.moi_backend,file)
 end
 
 

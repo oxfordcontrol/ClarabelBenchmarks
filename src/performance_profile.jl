@@ -4,7 +4,9 @@ function performance_profile(df)
 
     best     = Dict()
     problems = unique(df.problem)
-    solvers  = unique(df.solver)
+    tagged_solvers_all = collect(zip(df.solver,df.tag))
+    tagged_solvers_unique  = unique(tagged_solvers_all)
+    tagged_solvers_unique = sort(tagged_solvers_unique, by = (x) -> x[1])
 
     ok = ["OPTIMAL","ALMOST_OPTIMAL","LOCALLY_SOLVED"]
 
@@ -36,10 +38,21 @@ function performance_profile(df)
     h = plot()
     n = length(problems)
     #make a plot
-    for solver in solvers
-        t = pp[pp.solver .== solver, :].pratio
+    for tagged_solver in tagged_solvers_unique
+
+        #cleanup solver strings 
+        solverstr = tagged_solver[1]
+        solvertag = tagged_solver[2]
+        solverstr = solverstr == "Clarabel"   ? "Clarabel (Julia)" : solverstr
+        solverstr = solverstr == "ClarabelRs" ? "Clarabel (Rust)"  : solverstr
+
+        if !isnothing(solvertag)
+            solverstr = solverstr * " : " * string(solvertag) 
+        end
+
+        t = pp[pp.solver .== tagged_solver[1] .&& pp.tag .== tagged_solver[2], :].pratio
         y = [sum(t .< p)/n for p in perf_levels]
-        plot!(h, perf_levels,y,label = solver, palette = :Set1_9, linewidth = 2)
+        plot!(h, perf_levels,y,label = solverstr, palette = :tol_bright, linewidth = 2)
     end
 
     xaxis!(h, :log10)

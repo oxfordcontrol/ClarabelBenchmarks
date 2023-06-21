@@ -14,7 +14,7 @@ function netlib_feasible_load(test_name)
     srcpath = joinpath(@__DIR__,"./feasibleLP")
     file = joinpath(srcpath,test_name * ".mat")
     probdata = matread(file)
-    conic_data = data_conic_form(probdata)
+    conic_data = NETLIButils.data_conic_form(probdata)
 
     return conic_data
 end
@@ -41,7 +41,7 @@ end
 
 module NETLIButils 
 
-using ClarabelBenchmarks
+    using ClarabelBenchmarks, SparseArrays
 
     # LP form
     #   min     c'x

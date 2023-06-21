@@ -6,7 +6,7 @@ function netlib_feasible_generic(
     @variable(model, x[1:length(c)])
     @constraint(model, c1, Aineq*x .<= bineq)
     @constraint(model, c2, Aeq*x .== beq)
-    @objective(model, Min, sum(c.*x))
+    @objective(model, Min, sum(c.*x) + x[1]*x[1])
     optimize!(model)
 
     return nothing

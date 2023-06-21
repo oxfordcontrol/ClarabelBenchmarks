@@ -3,6 +3,8 @@
 
 using JuMP, DataFrames
 using MathOptInterface
+using Clarabel
+
 const MOI = MathOptInterface
 
 # main problem library is stored here 
@@ -185,13 +187,13 @@ function dropinfs(A,b; thresh = 5e19)
 
 end
 
-function run_benchmarks!(df, solvers, class; exclude = Regex[], time_limit = Inf, verbose = false)
+function run_benchmarks!(df, solvers, class; exclude = Regex[], time_limit = Inf, verbose = false, tag = nothing, rerun = false)
 
     for package in solvers 
 
-        #skip if already run for this solver
-        if(!isempty(df) && String(Symbol(package)) ∈ df.solver)
-            println("Found results for ", package)
+        #skip if already run for this solver with this particular tag
+        if(!rerun && !isempty(df) && (String(Symbol(package)),tag) ∈ collect(zip(df.solver,df.tag)))
+            println("Loading results for ", package)
             continue
         end
 
@@ -202,10 +204,14 @@ function run_benchmarks!(df, solvers, class; exclude = Regex[], time_limit = Inf
             package.Optimizer; 
             settings = settings,
             class = class,
-            verbose = false,
+            verbose = verbose,
             exclude = exclude,
             precompile = true,
             time_limit = time_limit)
+
+        result[!,:tag] .= tag
+
+        result[!,:solver] .= String(Symbol(package))
 
         allowmissing!(result)
         df = [df;result]
@@ -214,17 +220,47 @@ function run_benchmarks!(df, solvers, class; exclude = Regex[], time_limit = Inf
     sort!(df,[:group, :problem])
 end
 
+function get_problem_data(group,name)
 
-function bench_common(filename, solvers, class; exclude = Regex[], time_limit = Inf, verbose = false)
+    #a roundabout way of accessing problem data...
+
+    model = Model(Clarabel.Optimizer)
+    set_optimizer_attributes(model,
+                    "verbose"=>true,
+                    "equilibrate_enable"=>false,
+                    "max_iter"=>0,
+                    "presolve_enable"=>false)
+    ClarabelBenchmarks.PROBLEMS[group][name](model)
+
+    solver = model.moi_backend.optimizer.model.optimizer.solver 
+
+    P = solver.data.P 
+    q = solver.data.q 
+    A = solver.data.A 
+    b = solver.data.b 
+
+    #PJG: This will break once presolver is updated
+    cone_specs = solver.data.presolver.cone_specs
+
+    return (P,q,A,b,cone_specs)
+
+end
+
+function bench_common(filename, solvers, class; exclude = Regex[], time_limit = Inf, verbose = false, tag = nothing,rerun = false)
     
     (filedir,filename)  = splitdir(filename)
     (filename,_fileext) = splitext(filename)
     
     savefile = joinpath((filedir,"results",filename * ".jld2"))
+    plotfile = joinpath((filedir,"results",filename * ".pdf"))
 
     if isfile(savefile)
         println("Loading benchmark data from: ", savefile)
         df = load(savefile)["df"]
+        #if df doesn't already have a tag field, add it here 
+        if "tag" ∉ names(df)
+            df[!,:tag] .= nothing 
+        end
     else 
         println("Saving benchmark data to: ", savefile)
         df = DataFrame()
@@ -233,10 +269,16 @@ function bench_common(filename, solvers, class; exclude = Regex[], time_limit = 
     df = run_benchmarks!(df, solvers, class; 
                     exclude = exclude, 
                     time_limit = time_limit, 
-                    verbose = verbose)
+                    verbose = verbose, 
+                    tag = tag,
+                    rerun = rerun)
 
     jldsave(savefile; df)   
+
+    h = performance_profile(df)
+    savefig(h,plotfile)
 
     return df
 
 end
+

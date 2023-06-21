@@ -7,7 +7,7 @@ using JuMP
 
     @variable(model, x)
     @constraint(model, x >= 2)
-    @objective(model, Min, x^2)
+    @objective(model, Min, x^2 + x)
     optimize!(model)
 
     return nothing

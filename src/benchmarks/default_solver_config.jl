@@ -25,6 +25,7 @@ SOLVER_CONFIG[:ECOS] = SettingsDict(
 
 #MOSEK
 SOLVER_CONFIG[:Mosek] = SettingsDict(
+    :MSK_IPAR_PRESOLVE_USE => 0
 )
 
 #OSQP
@@ -41,4 +42,9 @@ SOLVER_CONFIG[:HiGHS] = SettingsDict(
 
 #Hypatia
 SOLVER_CONFIG[:Hypatia] = SettingsDict(
+)
+
+#Tulip
+SOLVER_CONFIG[:Tulip] = SettingsDict(
+    :Presolve_Level => 0
 )

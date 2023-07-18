@@ -1,12 +1,16 @@
 using Plots, JLD2,DataFrames
 
-function performance_profile(df)
+function performance_profile(df; plotlist = nothing)
 
     best     = Dict()
     problems = unique(df.problem)
     tagged_solvers_all = collect(zip(df.solver,df.tag))
     tagged_solvers_unique  = unique(tagged_solvers_all)
     tagged_solvers_unique = sort(tagged_solvers_unique, by = (x) -> x[1])
+
+    if(!isnothing(plotlist))
+        tagged_solvers_unique = filter(x -> x[1] ∈ String.(Symbol.(plotlist)), tagged_solvers_unique)
+    end
 
     ok = ["OPTIMAL","ALMOST_OPTIMAL","LOCALLY_SOLVED"]
 
@@ -46,7 +50,8 @@ function performance_profile(df)
         solverstr = solverstr == "Clarabel"   ? "Clarabel (Julia)" : solverstr
         solverstr = solverstr == "ClarabelRs" ? "Clarabel (Rust)"  : solverstr
 
-        if !isnothing(solvertag)
+        println(solvertag, typeof(solvertag))
+        if !isnothing(solvertag) && solvertag != :nothing
             solverstr = solverstr * " : " * string(solvertag) 
         end
 

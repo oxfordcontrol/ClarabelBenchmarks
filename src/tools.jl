@@ -195,7 +195,14 @@ function run_benchmarks!(df, solvers, class; exclude = Regex[], time_limit = Inf
         if(!rerun && !isempty(df) && (String(Symbol(package)),tag) ∈ collect(zip(df.solver,df.tag)))
             println("Loading results for ", package)
             continue
+        end 
+        #delete any existing results if rerunning with this tag 
+        if(rerun) 
+            println("Rerunning results for ", package)
+            idx = String(Symbol(package)) .== df.solver .&& nothing .== df.tag
+            df = df[.!idx,:] 
         end
+
 
         println("Solving with ", package)
 
@@ -246,7 +253,7 @@ function get_problem_data(group,name)
 
 end
 
-function bench_common(filename, solvers, class; exclude = Regex[], time_limit = Inf, verbose = false, tag = nothing,rerun = false)
+function bench_common(filename, solvers, class; exclude = Regex[], time_limit = Inf, verbose = false, tag = nothing, rerun = false, plotlist = nothing)
     
     (filedir,filename)  = splitdir(filename)
     (filename,_fileext) = splitext(filename)
@@ -275,7 +282,7 @@ function bench_common(filename, solvers, class; exclude = Regex[], time_limit = 
 
     jldsave(savefile; df)   
 
-    h = performance_profile(df)
+    h = performance_profile(df,plotlist=plotlist)
     savefig(h,plotfile)
 
     return df

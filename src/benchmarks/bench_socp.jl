@@ -12,8 +12,7 @@ exclude = [r"cblib_socp"] #done in separate bench_cblib_socp.jl
 verbose = false
 time_limit = 300.
 
-tag     = :unit
-rerun = false
+rerun = true
 
 
 

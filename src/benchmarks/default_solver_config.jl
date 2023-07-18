@@ -38,6 +38,7 @@ SOLVER_CONFIG[:SCS] = SettingsDict(
 
 #HiGHS
 SOLVER_CONFIG[:HiGHS] = SettingsDict(
+    :presolve => "off"
 )
 
 #Hypatia

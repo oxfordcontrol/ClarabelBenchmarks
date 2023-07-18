@@ -5,12 +5,11 @@ using ClarabelBenchmarks, DataFrames, JLD2
 using Clarabel, ECOS, Gurobi, MosekTools
 using ClarabelRs
 
-solvers = [ECOS,Gurobi,Mosek,Clarabel,ClarabelRs] #, Hypatia]
-solvers = [Clarabel]
+solvers = [Mosek,Clarabel,ClarabelRs,ECOS] #, Hypatia]
 class   = ["cblib_socp"]
 verbose = false
 time_limit = 120.
-tag     = :unit
+tag     = :nothing
 rerun = false
 
 df = ClarabelBenchmarks.bench_common(

@@ -199,7 +199,7 @@ function run_benchmarks!(df, solvers, class; exclude = Regex[], time_limit = Inf
         #delete any existing results if rerunning with this tag 
         if(rerun) 
             println("Rerunning results for ", package)
-            idx = String(Symbol(package)) .== df.solver .&& nothing .== df.tag
+            idx = String(Symbol(package)) .== df.solver .&& tag .== df.tag
             df = df[.!idx,:] 
         end
 

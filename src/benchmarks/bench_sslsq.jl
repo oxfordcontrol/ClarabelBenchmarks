@@ -6,10 +6,11 @@ using Clarabel, ECOS, Gurobi, MosekTools
 using ClarabelRs
 
 solvers = [Clarabel,ECOS,ClarabelRs,Mosek,Gurobi] #,Hypatia]
+solvers = [Clarabel]
 class   = ["sslsq"]
-verbose = true
+verbose = false
 time_limit = 300.
-tag = nothing
+tag = :ma57
 rerun = false
 plotlist = [Clarabel,Mosek,ClarabelRs,ECOS] 
 

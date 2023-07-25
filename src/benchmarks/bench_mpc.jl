@@ -12,16 +12,15 @@ using HiGHS
 
 #solvers = [ClarabelRs,Gurobi,Mosek,Clarabel,ECOS,HiGHS] 
 solvers = [Clarabel,Gurobi,Mosek,ClarabelRs,ECOS]
-solvers = [ClarabelRs]
-tag     = :qpeq
-class   = ["maros"]
-verbose = false
+solvers = [Clarabel,Mosek,ClarabelRs]
+tag     = nothing
+class   = ["mpc"]
+verbose = true
 time_limit = 120.
-rerun = false
-plotlist = [Mosek,ClarabelRs,ECOS,Gurobi] 
+rerun = true
+#plotlist = [Mosek,ClarabelRs,ECOS,Gurobi] 
 
 df = ClarabelBenchmarks.bench_common(
     @__FILE__, solvers, class;
     time_limit = time_limit,
-    verbose = verbose, tag = tag, rerun = rerun,
-    plotlist = plotlist)
+    verbose = verbose, tag = tag, rerun = rerun)

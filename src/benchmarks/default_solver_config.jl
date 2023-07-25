@@ -8,6 +8,7 @@ SOLVER_CONFIG = Dict{Symbol,SettingsDict}()
 
 #Clarabel (Julia version )
 SOLVER_CONFIG[:Clarabel] = SettingsDict(
+    #:direct_solve_method => :hsl_ma57
 )
 
 #Clarabel (Rust version )

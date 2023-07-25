@@ -1,3 +1,5 @@
 [submodule "src/problem_sets/mpc/data_source"]
 	path = src/problem_sets/mpc/data_source
 	url = https://github.com/ferreau/mpcBenchmarking/
+[submodule "data_source/"]
+	url = https://github.com/goulart-paul/mpcBenchmarking

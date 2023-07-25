@@ -110,7 +110,7 @@ module NETLIButils
         uineq = u[.!eqidx,:]
         Aineq = [Aineq; -Aineq]
         bineq = [uineq;-lineq]
-        Aineq,bineq = dropinfs(Aineq,bineq; thresh = 5e19)
+        Aineq,bineq = ClarabelBenchmarks.dropinfs(Aineq,bineq; thresh = 5e19)
 
         return c,Aineq,bineq,Aeq,beq
 

@@ -15,11 +15,6 @@ SOLVER_CONFIG[:Clarabel] = SettingsDict(
 SOLVER_CONFIG[:ClarabelRs] = SettingsDict(
 )
 
-#Gurobi 
-SOLVER_CONFIG[:Gurobi] = SettingsDict(
-    :presolve => false,
-)
-
 #ECOS
 SOLVER_CONFIG[:ECOS] = SettingsDict(
 )
@@ -29,8 +24,15 @@ SOLVER_CONFIG[:Mosek] = SettingsDict(
     :MSK_IPAR_PRESOLVE_USE => 0
 )
 
+#Gurobi 
+SOLVER_CONFIG[:Gurobi] = SettingsDict(
+    :presolve => false,
+)
+
 #OSQP
 SOLVER_CONFIG[:OSQP] = SettingsDict(
+    :eps_abs => 1e-5,
+    :eps_rel => 1e-5,
 )
 
 #SCS

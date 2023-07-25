@@ -1,6 +1,6 @@
 using Plots, JLD2,DataFrames
 
-function performance_profile(df; plotlist = nothing)
+function performance_profile(df; plotlist = nothing, ok_status = nothing)
 
     best     = Dict()
     problems = unique(df.problem)
@@ -12,12 +12,14 @@ function performance_profile(df; plotlist = nothing)
         tagged_solvers_unique = filter(x -> x[1] ∈ String.(Symbol.(plotlist)), tagged_solvers_unique)
     end
 
-    ok = ["OPTIMAL","ALMOST_OPTIMAL","LOCALLY_SOLVED"]
+    if(isnothing(ok_status))
+        ok_status = ["OPTIMAL"]
+    end
 
     #find the best time for each problem 
     for problem in problems 
         results = df[df.problem .== problem,:]
-        optonly = results[in.(results.status, [ok]) ,:]
+        optonly = results[in.(results.status, [ok_status]) ,:]
         if(size(optonly)[1] == 0)
             tmin = Inf 
         else 
@@ -31,7 +33,7 @@ function performance_profile(df; plotlist = nothing)
     pp.pratio .= Inf
     for i in 1:(size(pp)[1])
         row = pp[i,:]
-        if row.status ∈ ok
+        if row.status ∈ ok_status
             row.pratio = row.solve_time  / best[row.problem]
         end
     end

@@ -66,9 +66,11 @@ function mpc_solve_problem(
     end
 
     # interval constraints 
-    for i in 1:ni
-        @constraint(model, umin .<= u[:,i] .<= umax)
-    end 
+    if !isnothing(umin)
+        for i in 1:ni
+            @constraint(model, umin .<= u[:,i] .<= umax)
+        end 
+    end
 
     if has_outputs && !isnothing(ymin)
         for i in 1:ni
@@ -98,12 +100,13 @@ function mpc_solve_problem(
     end 
 
     #ensure references exist (zero if needed)
-    if has_outputs && isnothing(yr)
+    if has_outputs && (isnothing(yr) || yr == 0.0)
         yr = zeros(size(y))
     end
-    if isnothing(ur)
+    if (isnothing(ur) || ur == 0.0)
         ur = zeros(size(u))
     end
+
     
     objective = 0
     for i in 1:ni

@@ -55,11 +55,11 @@ function clean_imported_data(data)
     #set horizon to integer value 
     data["ni"] = Int(data["ni"])
 
-    #concatenate references into matrices 
-    if !isnothing(data["yr"])
+    #concatenate matlab cell arrays into matrices or leave as a scalar
+    if !isnothing(data["yr"]) && !isa(data["yr"],Float64)
         data["yr"] = hcat(data["yr"]...)
     end
-    if !isnothing(data["ur"])
+    if !isnothing(data["ur"]) && !isa(data["ur"],Float64)
         data["ur"] = hcat(data["ur"]...)
     end
 

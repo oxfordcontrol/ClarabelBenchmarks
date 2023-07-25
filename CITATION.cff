@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use these benchmarks, please cite the main Clarabel solver paper instead."
+authors:
+- family-names: "Goulart"
+  given-names: "Paul"
+  orcid: "https://orcid.org/0000-0002-0456-4124"
+- family-names: "Chen"
+  given-names: "Yuwen"
+  orcid: "https://orcid.org/0000-0001-8960-9725"
+title: "Clarabel solver Benchmark suite"
+version: 0.5.0
+date-released: 2023-07-25
+url: "https://github.com/oxfordcontrol/ClarabelBenchmarks"

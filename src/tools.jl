@@ -253,7 +253,8 @@ function get_problem_data(group,name)
 
 end
 
-function bench_common(filename, solvers, class; exclude = Regex[], time_limit = Inf, verbose = false, tag = nothing, rerun = false, plotlist = nothing)
+function bench_common(filename, solvers, class; exclude = Regex[], time_limit = Inf, 
+        verbose = false, tag = nothing, rerun = false, plotlist = nothing, ok_status = nothing)
     
     (filedir,filename)  = splitdir(filename)
     (filename,_fileext) = splitext(filename)
@@ -282,7 +283,7 @@ function bench_common(filename, solvers, class; exclude = Regex[], time_limit = 
 
     jldsave(savefile; df)   
 
-    h = performance_profile(df,plotlist=plotlist)
+    h = performance_profile(df,plotlist=plotlist,ok_status=ok_status)
     savefig(h,plotfile)
 
     return df

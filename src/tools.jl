@@ -80,24 +80,8 @@ function run_benchmarks_inner(
                 println("Solving : ", test_name)
             end
 
-            #create an empty model and pass to solver 
-            model = Model(optimizer_factory)
-            for (key,val) in settings 
-                set_optimizer_attribute(model, string(key), val)
-            end
-            if(verbose == false); set_silent(model); 
-            else unset_silent(model); 
-            end
-
-            #not all solver support setting time limits. Looking at you, ECOS.
-            try
-                set_time_limit_sec(model, time_limit)
-            catch
-            end
-
             #solve and log results
-            timeout = time_limit + 10  #allow for JuMP load times 
-            groups[classkey][test_name] = solve_with_timeout(time_limit, classkey,test_name,model,optimizer_factory)
+            groups[classkey][test_name] = solve_with_timeout(time_limit,classkey,test_name,optimizer_factory,settings,verbose)
 
         end
     end
@@ -108,7 +92,7 @@ function any_workers()
     workers() != [1]
 end 
 
-function initialize_worker(optimizer_factory)
+function initialize_worker()
     #reinitialize worker
     newpid = addprocs(1)    
     println("initialized new worker.  pid = ", newpid) 
@@ -121,7 +105,7 @@ function kill_worker(pid)
         else 
             println("trying to kill pid = ", pid)
             try
-                rmprocs(pid; waitfor = 0.1)
+                interrupt(pid)
             catch
             end
         end
@@ -147,37 +131,30 @@ function wait_for_task(task, timeout)
     end 
 end 
 
-function solve_with_timeout(timeout,classkey,test_name,model,optimizer_factory)
+function solve_with_timeout(time_limit,classkey,test_name,optimizer_factory,settings,verbose)
 
     if !any_workers() 
         #reinitialize worker
-        initialize_worker(optimizer_factory)
+        initialize_worker()
     end 
     
     pid = workers()[end]
 
     #force reload modules and precompile 
-    println("calling remote package reload")
     remote_package_reload(Symbol(solver_module(optimizer_factory)))
-    println("calling remote solve dummies")
     remote_solve_dummies(optimizer_factory)
 
     #solve our actual problem on the remote
     ch  = RemoteChannel(pid)
 
-    task = @async put!(ch,remotecall_fetch(remote_solve, pid,classkey,test_name,model))
+    task = @async put!(ch,remotecall_fetch(remote_solve, pid,time_limit,classkey,test_name,optimizer_factory,settings,verbose))
+
+    timeout = time_limit + 10 #allow time for JuMP processing
 
     if wait_for_task(task,timeout)
-        println("wait for task success!")
-        println("task is ..", task)
-        println("task failure status is ", istaskfailed(task))
-        println("channel is...", ch)
         solution = take!(ch)
-        println("recovery from channel success!")
     else 
         println("remote solve failed or timed out")
-        println("task is ..", task)
-        println("task failure status is ", istaskfailed(task))
         kill_worker(pid)
         #if solver failed, get a summary for a blank model
         solution = solution_summary(Model(optimizer_factory))
@@ -193,8 +170,7 @@ end
 
 function remote_package_reload(optimizer_symbol)
 
-    println("calling remote_package_reload with arg ", optimizer_symbol)
-    println("....on process ", myid())
+    println("calling remote_package_reload with ", optimizer_symbol)
 
     eval(quote @everywhere using ClarabelBenchmarks end)
     eval(quote @everywhere using JuMP end)
@@ -204,8 +180,8 @@ function remote_package_reload(optimizer_symbol)
 end
 
 function remote_solve_dummies(optimizer_factory)
-    println("calling remote_solve_dummies with arg ", optimizer_factory)
-    println("....on process ", myid())
+
+    println("calling remote_solve_dummies with ", optimizer_factory)
 
     expr = quote ClarabelBenchmarks.run_dummy_problems_inner($optimizer_factory) end 
     eval(quote @everywhere $expr end)
@@ -227,30 +203,32 @@ function run_dummy_problems_inner(optimizer_factory)
         set_silent(model)
         try 
             test(model)
-            println("Solved dummy")
         catch
-            println("Failed dummy")
         end
     end
 end 
 
-function remote_solve(classkey,test_name,model)
-    
-    #rerun dummy problems every time.  A little inefficient 
-    #but ensures that we will have always compiled on the current 
-    #worker 
-    println("Calling remote solve")
-    println("model type is ", typeof(model))
-    println("Unset silent")
-    try
-        println("trying")
-        ClarabelBenchmarks.PROBLEMS[classkey][test_name](model)
-        println("....solved")
-    catch e
-        println("Caught error")
-        showerror(stdout,e)
+function remote_solve(time_limit,classkey,test_name,optimizer_factory,settings,verbose)
+
+    #create an empty model and pass to solver 
+    model = Model(optimizer_factory)
+        for (key,val) in settings 
+            set_optimizer_attribute(model, string(key), val)
+        end
+    if(verbose == false); 
+        set_silent(model); 
+    else 
+        unset_silent(model); 
     end
-    println("Calling remote solve finished")
+    
+    #not all solver support setting time limits. Looking at you, ECOS.
+    try
+        set_time_limit_sec(model, time_limit)
+    catch
+    end
+
+    ClarabelBenchmarks.PROBLEMS[classkey][test_name](model)
+
     return solution_summary(model)
 end
 

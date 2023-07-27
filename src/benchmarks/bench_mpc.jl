@@ -7,14 +7,19 @@ using Gurobi, MosekTools
 using ClarabelRs
 
 solvers = [Clarabel,Mosek,ClarabelRs,ECOS,Gurobi,OSQP,Hypatia,HiGHS]
-solvers = [Gurobi]
+solvers = [Clarabel,ClarabelRs]
 tag     = nothing
 class   = ["mpc"]
-verbose = true
+verbose = false
 time_limit = 10.
 rerun = false
+plotlist = [Mosek,ClarabelRs,ECOS,Gurobi,OSQP,Hypatia,HiGHS]
+
 
 df = ClarabelBenchmarks.bench_common(
     @__FILE__, solvers, class;
     time_limit = time_limit,
-    verbose = verbose, tag = tag, rerun = rerun)
+    verbose = verbose, 
+    tag = tag, 
+    rerun = rerun,
+    plotlist=plotlist)

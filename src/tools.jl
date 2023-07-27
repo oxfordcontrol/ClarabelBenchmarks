@@ -4,6 +4,7 @@
 using JuMP, DataFrames
 using MathOptInterface
 using Clarabel
+using Distributed
 
 const MOI = MathOptInterface
 
@@ -44,14 +45,7 @@ function run_benchmarks_inner(
     include::Union{Nothing,Vector{String},Vector{Regex}} = Regex[],
     class::Union{Nothing,Vector{String},Vector{Regex}} = Regex[r".*"],
     time_limit::Float64 = Inf,
-    precompile::Bool = true,
 )
-
-    #run all of the dummy problems to force compilation
-    if precompile
-        run_dummy_problems(optimizer_factory)
-    end
-
     groups = Dict{String,Dict}()
     for classkey in keys(PROBLEMS)
 
@@ -102,20 +96,128 @@ function run_benchmarks_inner(
             end
 
             #solve and log results
-            try
-                PROBLEMS[classkey][test_name](model)
-                groups[classkey][test_name] = solution_summary(model)
-            catch
-                #if solver failed, get a summary for a blank model
-                groups[classkey][test_name] = solution_summary(Model(optimizer_factory))
-            end
+            timeout = time_limit + 10  #allow for JuMP load times 
+            groups[classkey][test_name] = solve_with_timeout(time_limit, classkey,test_name,model,optimizer_factory)
+
         end
     end
     return post_process_benchmarks(groups)
 end
 
-function run_dummy_problems(optimizer_factory)
+function any_workers()
+    workers() != [1]
+end 
 
+function initialize_worker(optimizer_factory)
+    #reinitialize worker
+    newpid = addprocs(1)    
+    println("initialized new worker.  pid = ", newpid) 
+end 
+
+function kill_worker(pid)
+    while true
+        if pid ∉ workers()
+            break 
+        else 
+            println("trying to kill pid = ", pid)
+            try
+                rmprocs(pid; waitfor = 0.1)
+            catch
+            end
+        end
+        sleep(0.1)
+    end 
+end 
+
+function wait_for_task(task, timeout)
+
+    tstart = time()
+    while true 
+        if istaskdone(task) && !istaskfailed(task)
+            println("task finished successfully")
+            return true 
+        elseif time() - tstart > timeout
+            println("task timed out")
+            return false 
+        elseif istaskfailed(task)
+            println("task failed")
+            return false 
+        end 
+        sleep(0.1)
+    end 
+end 
+
+function solve_with_timeout(timeout,classkey,test_name,model,optimizer_factory)
+
+    if !any_workers() 
+        #reinitialize worker
+        initialize_worker(optimizer_factory)
+    end 
+    
+    pid = workers()[end]
+
+    #force reload modules and precompile 
+    println("calling remote package reload")
+    remote_package_reload(Symbol(solver_module(optimizer_factory)))
+    println("calling remote solve dummies")
+    remote_solve_dummies(optimizer_factory)
+
+    #solve our actual problem on the remote
+    ch  = RemoteChannel(pid)
+
+    task = @async put!(ch,remotecall_fetch(remote_solve, pid,classkey,test_name,model))
+
+    if wait_for_task(task,timeout)
+        println("wait for task success!")
+        println("task is ..", task)
+        println("task failure status is ", istaskfailed(task))
+        println("channel is...", ch)
+        solution = take!(ch)
+        println("recovery from channel success!")
+    else 
+        println("remote solve failed or timed out")
+        println("task is ..", task)
+        println("task failure status is ", istaskfailed(task))
+        kill_worker(pid)
+        #if solver failed, get a summary for a blank model
+        solution = solution_summary(Model(optimizer_factory))
+    end 
+    finalize(ch)
+    return solution 
+end
+
+function solver_module(optimizer_factory)
+    return Base.moduleroot(methods(optimizer_factory)[1].module)
+
+end
+
+function remote_package_reload(optimizer_symbol)
+
+    println("calling remote_package_reload with arg ", optimizer_symbol)
+    println("....on process ", myid())
+
+    eval(quote @everywhere using ClarabelBenchmarks end)
+    eval(quote @everywhere using JuMP end)
+
+    eval(quote @everywhere using $optimizer_symbol end)
+
+end
+
+function remote_solve_dummies(optimizer_factory)
+    println("calling remote_solve_dummies with arg ", optimizer_factory)
+    println("....on process ", myid())
+
+    expr = quote ClarabelBenchmarks.run_dummy_problems_inner($optimizer_factory) end 
+    eval(quote @everywhere $expr end)
+end
+
+function run_dummy_problems_inner(optimizer_factory)
+
+    if myid() == 1
+        return
+    end
+
+    println("solving dummies on pid = ", myid())
     for test = values(ClarabelBenchmarks.PROBLEMS["dummy"])
         #try to solve.   If it fails, just move on
         #since we're just trying to force compilation.
@@ -125,10 +227,34 @@ function run_dummy_problems(optimizer_factory)
         set_silent(model)
         try 
             test(model)
-        catch; 
+            println("Solved dummy")
+        catch
+            println("Failed dummy")
         end
     end
+end 
+
+function remote_solve(classkey,test_name,model)
+    
+    #rerun dummy problems every time.  A little inefficient 
+    #but ensures that we will have always compiled on the current 
+    #worker 
+    println("Calling remote solve")
+    println("model type is ", typeof(model))
+    println("Unset silent")
+    try
+        println("trying")
+        ClarabelBenchmarks.PROBLEMS[classkey][test_name](model)
+        println("....solved")
+    catch e
+        println("Caught error")
+        showerror(stdout,e)
+    end
+    println("Calling remote solve finished")
+    return solution_summary(model)
 end
+
+
 
 
 function post_process_benchmarks(groups)
@@ -197,7 +323,7 @@ function run_benchmarks!(df, solvers, class; exclude = Regex[], time_limit = Inf
             continue
         end 
         #delete any existing results if rerunning with this tag 
-        if(rerun) 
+        if(rerun && !isempty(df)) 
             println("Rerunning results for ", package)
             idx = String(Symbol(package)) .== df.solver .&& tag .== df.tag
             df = df[.!idx,:] 
@@ -213,7 +339,6 @@ function run_benchmarks!(df, solvers, class; exclude = Regex[], time_limit = Inf
             class = class,
             verbose = verbose,
             exclude = exclude,
-            precompile = true,
             time_limit = time_limit)
 
         result[!,:tag] .= tag

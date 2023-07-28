@@ -1,4 +1,4 @@
-# Run benchmarks on Maros-Meszaros problems
+# Run benchmarks on netlib feasible LPs
 
 # include any solvers you want to test 
 using Clarabel, ECOS, OSQP, HiGHS, Hypatia

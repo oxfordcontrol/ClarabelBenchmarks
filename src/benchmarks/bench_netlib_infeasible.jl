@@ -1,24 +1,22 @@
-# Run benchmarks on Maros-Meszaros problems
+# Run benchmarks on netlib infeasible LPs
 
 # include any solvers you want to test 
-using ClarabelBenchmarks, DataFrames, JLD2
-using Clarabel, ECOS, Gurobi, MosekTools
+using Clarabel, ECOS, OSQP, HiGHS, Hypatia
+using Gurobi, MosekTools
 using ClarabelRs
-#using Tulip
 
-#use caution running these two because they are very slow for some problems
-#using HiGHS, Hypatia
-
-solvers = [ClarabelRs,Gurobi,Mosek,Clarabel,ECOS] 
+solvers = [Clarabel,Mosek,ClarabelRs,ECOS,Gurobi,HiGHS]
 class   = ["netlib_infeasible"]
 verbose = false
 time_limit = 300.
 rerun   = false
-ok_status = ["INFEASIBLE","DUAL_INFEASIBLE","PRIMAL_INFEASIBLE"]
 
+# these status codes count as "success" for  
+# the purpose of performance profiles
+ok_status = ["INFEASIBLE","DUAL_INFEASIBLE","PRIMAL_INFEASIBLE"]
 
 df = ClarabelBenchmarks.bench_common(
     @__FILE__, solvers, class;
     time_limit = time_limit,
-    verbose = verbose, rerun = rerun, 
+    verbose = verbose, rerun = rerun,
     ok_status = ok_status)

@@ -9,8 +9,6 @@ using HiGHS
 using Hypatia  
 
 solvers = [ClarabelRs,Gurobi,Mosek,Clarabel,ECOS,HiGHS] 
-solvers = [Clarabel]
-tag     = :unit
 class   = ["lp"]
 verbose = false
 time_limit = 180.

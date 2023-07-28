@@ -10,7 +10,6 @@ using ClarabelRs
 #using HiGHS, Hypatia
 
 solvers = [ClarabelRs,Gurobi,Mosek,Clarabel,ECOS] 
-solvers = [Clarabel,ClarabelRs,Mosek,Gurobi,ECOS]
 class   = ["netlib_infeasible"]
 verbose = false
 time_limit = 300.

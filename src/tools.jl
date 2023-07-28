@@ -11,7 +11,7 @@ const MOI = MathOptInterface
 # main problem library is stored here 
 PROBLEMS = Dict{String,Dict{String,Function}}()
 
-#macro for bringing problems into PROBLEMS.   Taken from Convex.jl
+#macro for bringing problems into PROBLEMS.   Modified from Convex.jl
 
 macro add_problem(prefix, q)
     @assert prefix isa Symbol

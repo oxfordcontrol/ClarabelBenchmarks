@@ -2,12 +2,11 @@
 
 # include any solvers you want to test 
 using ClarabelBenchmarks, DataFrames, JLD2
-using Clarabel, ECOS,OSQP, HiGHS, Hypatia
+using Clarabel, ECOS, OSQP, HiGHS, Hypatia
 using Gurobi, MosekTools
 using ClarabelRs
 
 solvers = [Clarabel,Mosek,ClarabelRs,ECOS,Gurobi,OSQP,Hypatia,HiGHS]
-solvers = [Clarabel,ClarabelRs]
 tag     = nothing
 class   = ["mpc"]
 verbose = false

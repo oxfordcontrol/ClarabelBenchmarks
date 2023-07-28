@@ -58,7 +58,9 @@ function run_benchmarks_inner(
             
         groups[classkey] = Dict()
 
-        for test_name in keys(PROBLEMS[classkey])
+        ntests = length(keys(PROBLEMS[classkey]))
+        
+        for (i,test_name) in enumerate(keys(PROBLEMS[classkey]))
 
             #skip test level exclusions 
             any(occursin.(exclude, Ref(test_name))) && continue
@@ -75,9 +77,9 @@ function run_benchmarks_inner(
 
             #tell me which problem I'm solving, even if not verbose 
             if(verbose)
-                println("\n\nSolving : ", test_name,"\n")
+                println("\n\nSolving : ", test_name," [", i, "/", ntests, "]","\n")
             else
-                println("Solving : ", test_name)
+                println("Solving : ", test_name, " [", i, "/", ntests, "]")
             end
 
             #solve and log results
@@ -99,13 +101,21 @@ function initialize_worker()
 end 
 
 function kill_worker(pid)
+
+    kill_attempts = 0
     while true
+        kill_attempts += 1 
         if pid ∉ workers()
             break 
         else 
             println("trying to kill pid = ", pid)
             try
-                interrupt(pid)
+                if kill_attempts < 100
+                    interrupt(pid)
+                else 
+                    println("killing pid ", pid, " via rmprocs")
+                    rmprocs(pid)
+                end
             catch
             end
         end
@@ -155,7 +165,10 @@ function solve_with_timeout(time_limit,classkey,test_name,optimizer_factory,sett
         solution = take!(ch)
     else 
         println("remote solve failed or timed out")
-        kill_worker(pid)
+        #kill if still running 
+        if(!istaskdone(task))
+            kill_worker(pid)
+        end
         #if solver failed, get a summary for a blank model
         solution = solution_summary(Model(optimizer_factory))
     end 
@@ -291,22 +304,21 @@ function dropinfs(A,b; thresh = 5e19)
 
 end
 
-function run_benchmarks!(df, solvers, class; exclude = Regex[], time_limit = Inf, verbose = false, tag = nothing, rerun = false)
+function run_benchmarks!(df, solvers, class, savefile; exclude = Regex[], time_limit = Inf, verbose = false, tag = nothing, rerun = false)
 
     for package in solvers 
 
         #skip if already run for this solver with this particular tag
         if(!rerun && !isempty(df) && (String(Symbol(package)),tag) ∈ collect(zip(df.solver,df.tag)))
-            println("Loading results for ", package)
+            println("Found existing results for ", package)
             continue
         end 
         #delete any existing results if rerunning with this tag 
         if(rerun && !isempty(df)) 
-            println("Rerunning results for ", package)
+            println("Will rerun results for ", package)
             idx = String(Symbol(package)) .== df.solver .&& tag .== df.tag
             df = df[.!idx,:] 
         end
-
 
         println("Solving with ", package)
 
@@ -325,9 +337,14 @@ function run_benchmarks!(df, solvers, class; exclude = Regex[], time_limit = Inf
 
         allowmissing!(result)
         df = [df;result]
+
+        df = sort!(df,[:group, :problem])
+        println("Saving...")
+        jldsave(savefile; df)   
     end
 
-    sort!(df,[:group, :problem])
+    return df
+  
 end
 
 function get_problem_data(group,name)
@@ -377,18 +394,15 @@ function bench_common(filename, solvers, class; exclude = Regex[], time_limit = 
         df = DataFrame()
     end
 
-    df = run_benchmarks!(df, solvers, class; 
+    df = run_benchmarks!(df, solvers, class, savefile; 
                     exclude = exclude, 
                     time_limit = time_limit, 
                     verbose = verbose, 
                     tag = tag,
                     rerun = rerun)
 
-    jldsave(savefile; df)   
-
     h = performance_profile(df,plotlist=plotlist,ok_status=ok_status)
     savefig(h,plotfile)
-
     return df
 
 end

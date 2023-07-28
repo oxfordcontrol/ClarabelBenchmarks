@@ -6,18 +6,23 @@ function maros_generic(
     (P, c, Aineq, bineq, Aeq, beq) = maros_load(maros_problem)
 
     if(shift)
-        P = Matrix(P)
+        exp = -Inf
+        origP = deepcopy(P)
         while true 
             try cholesky(P)
+                println("Cholesky factorizability confirmed")
+                if(exp != -Inf)
+                    println("Diagonal shifted by 10^$exp")
+                end
                 break
             catch 
-                #apply shift to P to eliminate 
-                #slightly negative eigenvalues
-                P = Matrix(P)
-                e = eigen(P)
-                c = minimum(e)
-                c = c < 0. ? c : 0.
-                P = sparse(P + (2*(-c + eps()*maximum(e))*I))
+                if(exp == -Inf)
+                    exp = -15
+                else
+                    exp += 1
+                end
+                P.nzval .= origP.nzval
+                P += (10.)^(exp)*I
             end
         end 
     end
@@ -32,26 +37,25 @@ function maros_generic(
 
 end
 
+#shifted versions 
 for test_name in maros_get_test_names()
 
-    #shifted versions 
-    fcn_name = Symbol("maros_shifted_" * test_name)
+    fcn_name = Symbol("maros_shifted_" * test_name )
     @eval begin
-            @add_problem maros function $fcn_name(
+            @add_problem maros_shifted function $fcn_name(
                 model,
             )
-                return maros_generic(model,$test_name,true)
+                return maros_generic(model,$test_name,$true)
             end
     end
 end 
 
-
+#original versions 
 for test_name in maros_get_test_names()
 
-    #original versions 
     fcn_name = Symbol("maros_" * test_name)
     @eval begin
-            @add_problem maros_shifted function $fcn_name(
+            @add_problem maros function $fcn_name(
                 model,
             )
                 return maros_generic(model,$test_name)

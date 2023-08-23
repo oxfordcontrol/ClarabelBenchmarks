@@ -2,7 +2,7 @@ using Random, StatsBase, Distributions, SparseArrays, LinearAlgebra
 using JuMP
 
 
-@add_problem lp function lp_cvar(
+@add_problem lp cvar function lp_cvar(
     model,
 )
 

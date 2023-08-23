@@ -7,12 +7,12 @@ using Gurobi, MosekTools
 using ClarabelRs
 
 solvers = [Clarabel,Mosek,ClarabelRs,ECOS,Gurobi,OSQP,Hypatia,HiGHS]
-class   = ["sslsq"]
+class   = "sslsq"
 verbose = false
 time_limit = 120.
 tag     = nothing
 rerun   = false
-plotlist = [Mosek,Clarabel,ClarabelRs,ECOS,Gurobi,Hypatia,HiGHS]
+plotlist = [Mosek,ClarabelRs,ECOS,Gurobi,Hypatia,HiGHS]
 
 
 df = ClarabelBenchmarks.bench_common(

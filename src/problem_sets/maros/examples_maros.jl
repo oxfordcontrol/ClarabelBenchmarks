@@ -40,9 +40,11 @@ end
 #shifted versions 
 for test_name in maros_get_test_names()
 
-    fcn_name = Symbol("maros_shifted_" * test_name )
+    group_name = "maros_shifted"
+    fcn_name   = Symbol(group_name * "_" * test_name )
+
     @eval begin
-            @add_problem maros_shifted function $fcn_name(
+            @add_problem $group_name $test_name function $fcn_name(
                 model,
             )
                 return maros_generic(model,$test_name,$true)
@@ -52,13 +54,15 @@ end
 
 #original versions 
 for test_name in maros_get_test_names()
+    
+    group_name = "maros"
+    fcn_name   = Symbol(group_name * "_" * test_name )
 
-    fcn_name = Symbol("maros_" * test_name)
     @eval begin
-            @add_problem maros function $fcn_name(
+            @add_problem $group_name $test_name function $fcn_name(
                 model,
             )
-                return maros_generic(model,$test_name)
+                return maros_generic(model,$test_name,$false)
             end
     end
 end 

@@ -13,17 +13,6 @@ function netlib_feasible_generic(
 
 end
 
-for test_name in netlib_feasible_get_test_names()
-    fcn_name = Symbol("netlib_feasible_" * test_name)
-    @eval begin
-            @add_problem netlib_feasible function $fcn_name(
-                model,
-            )
-                return netlib_feasible_generic(model,$test_name)
-            end
-    end
-end 
-
 function netlib_infeasible_generic(
     model,
     netlib_infeasible_problem
@@ -39,13 +28,34 @@ function netlib_infeasible_generic(
 
 end
 
-for test_name in netlib_infeasible_get_test_names()
-    fcn_name = Symbol("netlib_infeasible_" * test_name)
+
+
+for test_name in netlib_feasible_get_test_names()
+    
+    group_name = "netlib_feasible"
+    fcn_name   = Symbol(group_name * "_" * test_name )
+
     @eval begin
-            @add_problem netlib_infeasible function $fcn_name(
+            @add_problem $group_name $test_name function $fcn_name(
+                model,
+            )
+                return netlib_feasible_generic(model,$test_name)
+            end
+    end
+end 
+
+
+for test_name in netlib_infeasible_get_test_names()
+    
+    group_name = "netlib_infeasible"
+    fcn_name   = Symbol(group_name * "_" * test_name )
+
+    @eval begin
+            @add_problem $group_name $test_name function $fcn_name(
                 model,
             )
                 return netlib_infeasible_generic(model,$test_name)
             end
     end
 end 
+

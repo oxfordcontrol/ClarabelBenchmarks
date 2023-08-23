@@ -33,9 +33,13 @@ end
 #generate problems according to problem size 
 
 for n in [10, 100, 500, 1000]
-    fcn_name = Symbol("qp_huber_fitting_n_" * string(n))
+
+    group_name = "qp"
+    test_name  = "huber_fitting_n_" * string(n)
+    fcn_name   = Symbol(group_name * "_" * test_name )
+
     @eval begin
-        @add_problem qp function $fcn_name(
+        @add_problem $group_name $test_name function $fcn_name(
             model,
         )
             return huber_fitting(model,$n)

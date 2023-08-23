@@ -7,7 +7,7 @@ using ClarabelRs
 
 solvers = [Mosek,Clarabel,ECOS,ClarabelRs,Hypatia]
 tag     = nothing
-class   = ["cblib_socp"]
+class   = "cblib_socp"
 verbose = false
 time_limit = 300.
 rerun = false

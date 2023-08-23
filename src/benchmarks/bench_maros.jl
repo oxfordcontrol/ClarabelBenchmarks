@@ -8,7 +8,7 @@ using ClarabelRs
 
 solvers = [Clarabel,Mosek,ClarabelRs,ECOS,Gurobi,OSQP,Hypatia,HiGHS]
 tag     = nothing
-class   = ["maros"]
+class   = "maros"
 verbose = false
 time_limit = 120.
 rerun = false

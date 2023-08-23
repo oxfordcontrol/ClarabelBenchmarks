@@ -11,14 +11,14 @@ module ClarabelBenchmarks
 
     #add new categories and problems here
     include("./problem_sets/maros/include.jl")
-    # include("./problem_sets/netlib/include.jl")
-    # include("./problem_sets/cblib/include.jl")
-    # include("./problem_sets/lp/include.jl")
-    # include("./problem_sets/qp/include.jl")
-    # include("./problem_sets/socp/include.jl")
-    # include("./problem_sets/sos/include.jl")
-    # include("./problem_sets/sslsq/include.jl")
-    # include("./problem_sets/mpc/include.jl")
+    include("./problem_sets/netlib/include.jl")
+    include("./problem_sets/cblib/include.jl")
+    include("./problem_sets/lp/include.jl")
+    include("./problem_sets/qp/include.jl")
+    include("./problem_sets/socp/include.jl")
+    include("./problem_sets/sos/include.jl")
+    include("./problem_sets/sslsq/include.jl")
+    include("./problem_sets/mpc/include.jl")
 
     #plotting functions 
     include("./performance_profile.jl")

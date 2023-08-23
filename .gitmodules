@@ -2,3 +2,6 @@
 	path = src/problem_sets/mpc/data_source
 	url = https://github.com/goulart-paul/mpcBenchmarking
 
+[submodule "src/problem_sets/opf/pglib-opf"]
+	path = src/problem_sets/opf/pglib-opf
+	url = https://github.com/power-grid-lib/pglib-opf

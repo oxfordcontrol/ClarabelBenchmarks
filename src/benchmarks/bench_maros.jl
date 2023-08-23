@@ -2,23 +2,17 @@
 
 # include any solvers you want to test 
 using ClarabelBenchmarks, DataFrames, JLD2
-using Clarabel, ECOS
+using Clarabel, ECOS, OSQP, HiGHS, Hypatia
 using Gurobi, MosekTools
 using ClarabelRs
 
-#use caution running these two because they are very slow for some problems
-using HiGHS
-#using Hypatia  #this solve segfaults on CONT-200
-
-#solvers = [ClarabelRs,Gurobi,Mosek,Clarabel,ECOS,HiGHS] 
-solvers = [Clarabel,Gurobi,Mosek,ClarabelRs,ECOS]
-solvers = [ClarabelRs]
-tag     = :qpeq
-class   = ["maros"]
+solvers = [Clarabel,Mosek,ClarabelRs,ECOS,Gurobi,OSQP,Hypatia,HiGHS]
+tag     = nothing
+class   = "maros"
 verbose = false
 time_limit = 120.
 rerun = false
-plotlist = [Mosek,ClarabelRs,ECOS,Gurobi] 
+plotlist = [Mosek,ClarabelRs,ECOS,Gurobi,OSQP,Hypatia,HiGHS]
 
 df = ClarabelBenchmarks.bench_common(
     @__FILE__, solvers, class;

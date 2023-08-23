@@ -1,6 +1,6 @@
 # Problem case taken from https://github.com/oxfordcontrol/Clarabel.jl/issues/103
 
-@add_problem qp function qp_issue_103(
+@add_problem qp issue_103 function qp_issue_103(
     model,
 )
 

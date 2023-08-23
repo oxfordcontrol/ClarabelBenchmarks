@@ -33,9 +33,13 @@ end
 #generate problems according to problem type and size 
 
 for n in [10, 100, 500]
-    fcn_name = Symbol("qp_svm_L2_n_" * string(n))
+
+    group_name = "qp"
+    test_name  = "svm_L2_n_" * string(n)
+    fcn_name   = Symbol(group_name * "_" * test_name )
+
     @eval begin
-        @add_problem qp function $fcn_name(
+        @add_problem $group_name $test_name function $fcn_name(
             model,
         )
             return qp_svm_L2(model,$n)

@@ -1,7 +1,7 @@
 # dummy problems for compiler warmup
 using JuMP
 
-@add_problem dummy function dummy_qp(
+@add_problem dummy qp function dummy_qp(
     model,
 )
 
@@ -13,7 +13,7 @@ using JuMP
     return nothing
 end
 
-@add_problem dummy function dummy_lp(
+@add_problem dummy lp function dummy_lp(
     model,
 )
 
@@ -25,7 +25,7 @@ end
     return nothing
 end
 
-@add_problem dummy function dummy_socp(
+@add_problem dummy socp function dummy_socp(
     model,
 )
 
@@ -37,7 +37,7 @@ end
     return nothing
 end
 
-@add_problem dummy function dummy_expcone(
+@add_problem dummy expcone function dummy_expcone(
     model,
 )
 
@@ -49,7 +49,7 @@ end
     return nothing
 end
 
-@add_problem dummy function dummy_powcone(
+@add_problem dummy powcone function dummy_powcone(
     model,
 )
     @variable(model, x[1:3])
@@ -60,7 +60,7 @@ end
     return nothing
 end
 
-@add_problem dummy function dummy_sdpcone(
+@add_problem dummy sdpcone function dummy_sdpcone(
     model,
 )
     @variable(model, x[1:2,1:2])

@@ -47,25 +47,33 @@ end
 
 
 # Lasso 
-for test_name in sslsq_get_test_names()
-    fcn_name = Symbol("sslsq_lasso_" * test_name)
+for matrix_name in sslsq_get_test_names()
+    
+    group_name = "sslsq"
+    test_name  = matrix_name * "_lasso"
+    fcn_name   = Symbol(group_name * "_" * test_name )
+
     @eval begin
-            @add_problem sslsq function $fcn_name(
+            @add_problem $group_name $test_name function $fcn_name(
                 model,
             )
-                return sslsq_lasso(model,$test_name)
+                return sslsq_lasso(model,$matrix_name)
             end
     end
 end 
 
 # Huber
-for test_name in sslsq_get_test_names()
-    fcn_name = Symbol("sslsq_huber_" * test_name)
+for matrix_name in sslsq_get_test_names()
+
+    group_name = "sslsq"
+    test_name  = matrix_name * "_huber"
+    fcn_name   = Symbol(group_name * "_" * test_name )
+
     @eval begin
-            @add_problem sslsq function $fcn_name(
+            @add_problem $group_name $test_name function $fcn_name(
                 model,
             )
-                return sslsq_huber(model,$test_name)
+                return sslsq_huber(model,$matrix_name)
             end
     end
 end 

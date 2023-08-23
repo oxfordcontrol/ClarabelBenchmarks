@@ -8,7 +8,7 @@ using ClarabelRs
 
 solvers = [Mosek,Clarabel,ECOS,ClarabelRs,Hypatia]
 tag     = nothing
-class   = ["cblib_exp"]
+class   = "cblib_exp"
 verbose = false
 time_limit = 300.
 rerun = false

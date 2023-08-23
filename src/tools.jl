@@ -13,8 +13,10 @@ PROBLEMS = Dict{String,Dict{String,Function}}()
 
 #macro for bringing problems into PROBLEMS.   Modified from Convex.jl
 
-macro add_problem(prefix, q)
-    @assert prefix isa Symbol
+macro add_problem(group_name, test_name, q)
+    group_name = Symbol(group_name)
+    test_name  = Symbol(test_name)
+    @assert test_name isa Symbol
     if q.head == :block
         f = q.args[2]
     elseif q.head == :function
@@ -30,63 +32,55 @@ macro add_problem(prefix, q)
         $(esc(f))
         dict = get!(
             PROBLEMS,
-            String($(Base.Meta.quot(prefix))),
+            String($(Base.Meta.quot(group_name))),
             Dict{String,Function}(),
         )
-        dict[String($(Base.Meta.quot(name)))] = $(esc(name))
+        dict[String($(Base.Meta.quot(test_name)))] = $(esc(name))
     end
 end
 
 function run_benchmarks_inner(
-    optimizer_factory;
+    optimizer_factory, 
+    classkey::String;
     settings::Dict = Dict{Symbol,Any}(),
     verbose = true,
     exclude::Vector{Regex} = Regex[],
     include::Union{Nothing,Vector{String},Vector{Regex}} = Regex[],
-    class::Union{Nothing,Vector{String},Vector{Regex}} = Regex[r".*"],
     time_limit::Float64 = Inf,
 )
     groups = Dict{String,Dict}()
-    for classkey in keys(PROBLEMS)
 
-        # skip if class is not in class list or is excluded 
-        if any(occursin.(exclude, Ref(classkey))) 
-            continue
-        elseif !any(occursin.(class, Ref(classkey))) 
-            continue
-        end   
-            
-        groups[classkey] = Dict()
+    groups[classkey] = Dict()
 
-        ntests = length(keys(PROBLEMS[classkey]))
-        
-        for (i,test_name) in enumerate(keys(PROBLEMS[classkey]))
+    ntests = length(keys(PROBLEMS[classkey]))
+    
+    for (i,test_name) in enumerate(keys(PROBLEMS[classkey]))
 
-            #skip test level exclusions 
-            any(occursin.(exclude, Ref(test_name))) && continue
+        #skip test level exclusions 
+        any(occursin.(exclude, Ref(test_name))) && continue
 
-            #skip if an explicit include list is provided and 
-            #this test is not a match 
-            if !isempty(include) 
-                if(isa(include,Vector{String}))
-                    !any(in(test_name, include)) && continue
-                else
-                    !any(occursin.(include, Ref(test_name))) && continue
-                end
-            end
-
-            #tell me which problem I'm solving, even if not verbose 
-            if(verbose)
-                println("\n\nSolving : ", test_name," [", i, "/", ntests, "]","\n")
+        #skip if an explicit include list is provided and 
+        #this test is not a match 
+        if !isempty(include) 
+            if(isa(include,Vector{String}))
+                !any(in(test_name, include)) && continue
             else
-                println("Solving : ", test_name, " [", i, "/", ntests, "]")
+                !any(occursin.(include, Ref(test_name))) && continue
             end
-
-            #solve and log results
-            groups[classkey][test_name] = solve_with_timeout(time_limit,classkey,test_name,optimizer_factory,settings,verbose)
-
         end
+
+        #tell me which problem I'm solving, even if not verbose 
+        if(verbose)
+            println("\n\nSolving : ", test_name," [", i, "/", ntests, "]","\n")
+        else
+            println("Solving : ", test_name, " [", i, "/", ntests, "]")
+        end
+
+        #solve and log results
+        groups[classkey][test_name] = solve_with_timeout(time_limit,classkey,test_name,optimizer_factory,settings,verbose)
+
     end
+
     return post_process_benchmarks(groups)
 end
 
@@ -224,10 +218,13 @@ end
 function remote_solve(time_limit,classkey,test_name,optimizer_factory,settings,verbose)
 
     #create an empty model and pass to solver 
+    println("calling remote solve")
     model = Model(optimizer_factory)
-        for (key,val) in settings 
-            set_optimizer_attribute(model, string(key), val)
-        end
+
+    for (key,val) in settings 
+        set_optimizer_attribute(model, string(key), val)
+    end
+
     if(verbose == false); 
         set_silent(model); 
     else 
@@ -240,7 +237,12 @@ function remote_solve(time_limit,classkey,test_name,optimizer_factory,settings,v
     catch
     end
 
-    ClarabelBenchmarks.PROBLEMS[classkey][test_name](model)
+    try
+        ClarabelBenchmarks.PROBLEMS[classkey][test_name](model)
+    catch e
+        println(e)
+    end
+    println("solve success")
 
     return solution_summary(model)
 end
@@ -304,7 +306,7 @@ function dropinfs(A,b; thresh = 5e19)
 
 end
 
-function run_benchmarks!(df, solvers, class, savefile; exclude = Regex[], time_limit = Inf, verbose = false, tag = nothing, rerun = false)
+function run_benchmarks!(df, solvers, classkey, savefile; exclude = Regex[], time_limit = Inf, verbose = false, tag = nothing, rerun = false)
 
     for package in solvers 
 
@@ -324,9 +326,8 @@ function run_benchmarks!(df, solvers, class, savefile; exclude = Regex[], time_l
 
         settings = ClarabelBenchmarks.SOLVER_CONFIG[Symbol(package)]
         result = ClarabelBenchmarks.run_benchmarks_inner(
-            package.Optimizer; 
+            package.Optimizer, classkey; 
             settings = settings,
-            class = class,
             verbose = verbose,
             exclude = exclude,
             time_limit = time_limit)
@@ -373,7 +374,7 @@ function get_problem_data(group,name)
 
 end
 
-function bench_common(filename, solvers, class; exclude = Regex[], time_limit = Inf, 
+function bench_common(filename, solvers, classkey; exclude = Regex[], time_limit = Inf, 
         verbose = false, tag = nothing, rerun = false, plotlist = nothing, ok_status = nothing)
     
     (filedir,filename)  = splitdir(filename)
@@ -384,17 +385,22 @@ function bench_common(filename, solvers, class; exclude = Regex[], time_limit = 
 
     if isfile(savefile)
         println("Loading benchmark data from: ", savefile)
-        df = load(savefile)["df"]
-        #if df doesn't already have a tag field, add it here 
-        if "tag" ∉ names(df)
-            df[!,:tag] .= nothing 
+        try
+            df = load(savefile)["df"]
+            #if df doesn't already have a tag field, add it here 
+            if "tag" ∉ names(df)
+                df[!,:tag] .= nothing 
+            end
+        catch
+            println("Error loading file, starting new data frame")
+            df = DataFrame()
         end
     else 
-        println("Saving benchmark data to: ", savefile)
+        println("Saving benchmark data to new file: ", savefile)
         df = DataFrame()
     end
 
-    df = run_benchmarks!(df, solvers, class, savefile; 
+    df = run_benchmarks!(df, solvers, classkey, savefile; 
                     exclude = exclude, 
                     time_limit = time_limit, 
                     verbose = verbose, 

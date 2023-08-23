@@ -6,7 +6,7 @@ using Gurobi, MosekTools
 using ClarabelRs
 
 solvers = [Clarabel,Mosek,ClarabelRs,ECOS,Gurobi,HiGHS]
-class   = ["netlib_infeasible"]
+class   = "netlib_infeasible"
 verbose = false
 time_limit = 300.
 rerun   = false

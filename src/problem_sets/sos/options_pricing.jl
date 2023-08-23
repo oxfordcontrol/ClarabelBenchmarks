@@ -38,11 +38,16 @@ conemap = Dict("socp" => SDSOSCone(),
 #generate problems according to problem type and size 
 
 for K in [5, 10, 20, 30, 35, 40, 45, 50]
+    
     for group in keys(conemap)
-    group_name = Symbol(group)
-    fcn_name = Symbol(group * "_options_pricing_K_" * string(K))
+
+    group_name = String(group)
+    test_name  = "options_pricing_K_" * string(K)
+    fcn_name   = Symbol(group_name * "_" * test_name )
+
+
     @eval begin
-            @add_problem $group_name function $fcn_name(
+            @add_problem $group_name $test_name function $fcn_name(
                 model,
             )
                 return options_pricing(model,$conemap[$group],$K)

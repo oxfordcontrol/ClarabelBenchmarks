@@ -7,7 +7,7 @@ Ported from python example implementation provided by Philipp Schiele
 """
 
 
-@add_problem lp function lp_svm_L1(
+function lp_svm_L1(
     model,
     n = 10,
     m = 50*n,
@@ -41,9 +41,13 @@ end
 #generate problems according to problem size
 
 for n in [10, 20, 50, 100]
-    fcn_name = Symbol("lp_svm_L1_n_" * string(n))
+
+    group_name = "lp"
+    test_name  = "svm_L1_n_" * string(n)
+    fcn_name   = Symbol(group_name * "_" * test_name )
+
     @eval begin
-        @add_problem lp function $fcn_name(
+        @add_problem $group_name $test_name function $fcn_name(
             model,
         )
             return lp_svm_L1(model,$n)

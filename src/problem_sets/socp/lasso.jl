@@ -42,7 +42,7 @@ function lasso_data(Type::Type{T} = Float64) where {T <: AbstractFloat}
 
 end
 
-@add_problem socp function socp_lasso(
+@add_problem socp lasso function socp_lasso(
     model,
 )
 

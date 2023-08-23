@@ -139,9 +139,12 @@ end
 
 # MPC problems 
 for test_name in mpc_get_test_names()
-    fcn_name = Symbol("mpc_" * test_name)
+
+    group_name = "mpc"
+    fcn_name   = Symbol(group_name * "_" * test_name )
+
     @eval begin
-            @add_problem mpc function $fcn_name(
+            @add_problem $group_name $test_name function $fcn_name(
                 model,
             )
                 return mpc_solve_problem(model,$test_name)

@@ -31,9 +31,13 @@ end
 #generate problems according to problem type and size 
 
 for n in [100, 1000, 5000]
-    fcn_name = Symbol("portfolio_optimization_n_" * string(n))
+
+    group_name = "qp"
+    test_name  = "portfolio_optimization_n_" * string(n)
+    fcn_name   = Symbol(group_name * "_" * test_name )
+
     @eval begin
-        @add_problem qp function $fcn_name(
+        @add_problem $group_name $test_name function $fcn_name(
             model,
         )
             return portfolio_optimization(model,$n)

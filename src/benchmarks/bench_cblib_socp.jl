@@ -5,15 +5,16 @@ using ClarabelBenchmarks, DataFrames, JLD2
 using Clarabel, ECOS, Gurobi, MosekTools
 using ClarabelRs
 
-solvers = [Mosek,Clarabel,ClarabelRs,ECOS] #, Hypatia]
-class   = ["cblib_socp"]
+solvers = [Mosek,Clarabel,ECOS,ClarabelRs,Hypatia]
+tag     = nothing
+class   = "cblib_socp"
 verbose = false
-time_limit = 120.
-tag     = :nothing
+time_limit = 300.
 rerun = false
+plotlist = [Mosek,ClarabelRs,ECOS,Hypatia]
 
 df = ClarabelBenchmarks.bench_common(
     @__FILE__, solvers, class;
     time_limit = time_limit,
-    verbose = verbose,
-    tag = tag,rerun = rerun)
+    verbose = verbose, tag = tag, rerun = rerun,
+    plotlist = plotlist)

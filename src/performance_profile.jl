@@ -1,4 +1,40 @@
-using Plots, JLD2,DataFrames
+using Plots, JLD2,DataFrames, ColorSchemes
+
+function get_style(solver,tag)
+
+    cs = ColorSchemes.seaborn_colorblind
+    solvers = ["Clarabel","Mosek","Gurobi","ClarabelRs","ECOS","Hypatia","HiGHS","OSQP"]
+
+    # get the color for the solver in the order above
+    idx = findfirst(solver .== solvers) 
+    if(isnothing(idx)) 
+        idx = length(solvers) + 1
+    end 
+    color = cs[idx]
+
+    #untagged solvers are solid  
+    if(isnothing(tag))
+        line = :solid
+    else 
+        line = :dash
+    end
+
+    #cleanup solver strings 
+    solver = solver == "Clarabel"   ? "Clarabel (Julia)" : solver
+    solver = solver == "ClarabelRs" ? "Clarabel (Rust)"  : solver
+    if !isnothing(tag) && tag != :nothing
+        solver = solver * " : " * string(tag) 
+    end    
+
+    label = solver
+    linewidth = 2
+
+    return Dict(:color => color, 
+                :line => line,
+                :label => label, 
+                :linewidth => linewidth)
+
+end
 
 function performance_profile(df; plotlist = nothing, ok_status = nothing)
 
@@ -46,19 +82,11 @@ function performance_profile(df; plotlist = nothing, ok_status = nothing)
     #make a plot
     for tagged_solver in tagged_solvers_unique
 
-        #cleanup solver strings 
-        solverstr = tagged_solver[1]
-        solvertag = tagged_solver[2]
-        solverstr = solverstr == "Clarabel"   ? "Clarabel (Julia)" : solverstr
-        solverstr = solverstr == "ClarabelRs" ? "Clarabel (Rust)"  : solverstr
-
-        if !isnothing(solvertag) && solvertag != :nothing
-            solverstr = solverstr * " : " * string(solvertag) 
-        end
-
         t = pp[pp.solver .== tagged_solver[1] .&& pp.tag .== tagged_solver[2], :].pratio
         y = [sum(t .< p)/n for p in perf_levels]
-        plot!(h, perf_levels,y,label = solverstr, palette = :tol_bright, linewidth = 2)
+
+        style = get_style(tagged_solver[1],tagged_solver[2])
+        plot!(h, perf_levels,y; style...)
     end
 
     xaxis!(h, :log10)
@@ -112,15 +140,6 @@ function time_profile(df; plotlist = nothing)
     #make a plot
     for tagged_solver in tagged_solvers_unique
 
-        #cleanup solver strings 
-        solverstr = tagged_solver[1]
-        solvertag = tagged_solver[2]
-        solverstr = solverstr == "Clarabel"   ? "Clarabel (Julia)" : solverstr
-        solverstr = solverstr == "ClarabelRs" ? "Clarabel (Rust)"  : solverstr
-
-        if !isnothing(solvertag) && solvertag != :nothing
-            solverstr = solverstr * " : " * string(solvertag) 
-        end
 
         thisdf = df[df.solver .== tagged_solver[1] .&& df.tag .== tagged_solver[2], :]
         nattempts = nrow(thisdf)
@@ -131,7 +150,8 @@ function time_profile(df; plotlist = nothing)
         t = [min_time; t; max_time]
         y = [0.0; y; y[end]]
 
-        plot!(h, t,y,label = solverstr, palette = :tol_bright, linewidth = 2)
+        style = get_style(tagged_solver[1],tagged_solver[2])
+        plot!(h, t,y;  style...)
 
 
     end

@@ -6,7 +6,7 @@ Ported from python example implementation provided by Philipp Schiele
 """
 
 
-@add_problem lp function lp_optimal_advertising(
+@add_problem lp optimal_advertising function lp_optimal_advertising(
     model,
 )
 

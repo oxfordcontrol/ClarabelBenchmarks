@@ -5,6 +5,9 @@ function power_models_generic(
     opf_problem_type,
     filepath,
 )
+
+    PowerModels.silence()
+
     power_model = PowerModels.instantiate_model(
         PowerModels.parse_file(filepath),
         opf_problem_type,

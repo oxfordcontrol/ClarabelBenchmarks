@@ -14,7 +14,7 @@ verbose = false
 time_limit = 180.
 rerun = true
 
-df = ClarabelBenchmarks.bench_common(
-    @__FILE__, solvers, class;
+df = ClarabelBenchmarks.benchmark(
+    solvers, class;
     time_limit = time_limit,
     verbose = verbose, tag = tag, rerun = rerun)

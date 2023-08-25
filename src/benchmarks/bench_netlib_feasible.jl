@@ -11,9 +11,12 @@ verbose = false
 time_limit = 300.
 rerun   = false
 
+#debug 
+#rerun = true 
+#solvers = [Clarabel,ClarabelRs]
 
 
-df = ClarabelBenchmarks.bench_common(
-    @__FILE__, solvers, class;
+df = ClarabelBenchmarks.benchmark(
+    solvers, class;
     time_limit = time_limit,
     verbose = verbose, rerun = rerun)

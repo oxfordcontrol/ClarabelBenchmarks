@@ -14,8 +14,8 @@ time_limit = 120.
 rerun = false
 plotlist = [Mosek,ClarabelRs,ECOS,Gurobi,OSQP,HiGHS]
 
-df = ClarabelBenchmarks.bench_common(
-    @__FILE__, solvers, class;
+df = ClarabelBenchmarks.benchmark(
+    solvers, class;
     time_limit = time_limit,
     verbose = verbose, tag = tag, rerun = rerun,
     plotlist = plotlist)
@@ -27,6 +27,6 @@ df = ClarabelBenchmarks.bench_common(
 problems = unique(df.problem)
 for p in problems
     if !any(df.problem .== p .&& df.status .== "OPTIMAL")
-        df = filter(row -> row.problem != p, df)
+        filter!(row -> row.problem != p, df)
     end
 end

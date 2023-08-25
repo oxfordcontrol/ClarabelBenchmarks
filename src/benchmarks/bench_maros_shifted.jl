@@ -15,8 +15,8 @@ time_limit = 120.
 rerun = false
 plotlist = [Mosek,ClarabelRs,ECOS,Gurobi,OSQP,Hypatia,HiGHS]
 
-df = ClarabelBenchmarks.bench_common(
-    @__FILE__, solvers, class;
+df = ClarabelBenchmarks.benchmark(
+    solvers, class;
     time_limit = time_limit,
     verbose = verbose, tag = tag, rerun = rerun,
     plotlist = plotlist)

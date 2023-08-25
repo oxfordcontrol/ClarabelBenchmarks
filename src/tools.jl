@@ -306,48 +306,6 @@ function dropinfs(A,b; thresh = 5e19)
 
 end
 
-function run_benchmarks!(df, solvers, classkey, savefile; exclude = Regex[], time_limit = Inf, verbose = false, tag = nothing, rerun = false)
-
-    for package in solvers 
-
-        #skip if already run for this solver with this particular tag
-        if(!rerun && !isempty(df) && (String(Symbol(package)),tag) ∈ collect(zip(df.solver,df.tag)))
-            println("Found existing results for ", package)
-            continue
-        end 
-        #delete any existing results if rerunning with this tag 
-        if(rerun && !isempty(df)) 
-            println("Will rerun results for ", package)
-            idx = String(Symbol(package)) .== df.solver .&& tag .== df.tag
-            df = df[.!idx,:] 
-        end
-
-        println("Solving with ", package)
-
-        settings = ClarabelBenchmarks.SOLVER_CONFIG[Symbol(package)]
-        result = ClarabelBenchmarks.run_benchmarks_inner(
-            package.Optimizer, classkey; 
-            settings = settings,
-            verbose = verbose,
-            exclude = exclude,
-            time_limit = time_limit)
-
-        result[!,:tag] .= tag
-
-        result[!,:solver] .= String(Symbol(package))
-
-        allowmissing!(result)
-        df = [df;result]
-
-        df = sort!(df,[:group, :problem])
-        println("Saving...")
-        jldsave(savefile; df)   
-    end
-
-    return df
-  
-end
-
 function get_problem_data(group,name)
 
     #a roundabout way of accessing problem data...
@@ -374,14 +332,19 @@ function get_problem_data(group,name)
 
 end
 
-function bench_common(filename, solvers, classkey; exclude = Regex[], time_limit = Inf, 
-        verbose = false, tag = nothing, rerun = false, plotlist = nothing, ok_status = nothing)
-    
-    (filedir,filename)  = splitdir(filename)
-    (filename,_fileext) = splitext(filename)
-    
-    savefile = joinpath((filedir,"results",filename * ".jld2"))
-    plotfile = joinpath((filedir,"results",filename * ".pdf"))
+function get_results_path()
+
+    results_path = joinpath(@__DIR__,"../results")
+    ispath(results_path) || mkdir(results_path)
+
+    return results_path
+end
+
+
+function run_benchmark!(package, classkey; exclude = Regex[], time_limit = Inf, verbose = false, tag = nothing, rerun = false)
+
+    filename = "bench_" * classkey * "_" * String(Symbol(package)) * ".jld2"
+    savefile = joinpath(get_results_path(),filename)
 
     if isfile(savefile)
         println("Loading benchmark data from: ", savefile)
@@ -400,15 +363,71 @@ function bench_common(filename, solvers, classkey; exclude = Regex[], time_limit
         df = DataFrame()
     end
 
-    df = run_benchmarks!(df, solvers, classkey, savefile; 
-                    exclude = exclude, 
-                    time_limit = time_limit, 
-                    verbose = verbose, 
-                    tag = tag,
-                    rerun = rerun)
+    #skip if already run for this solver with this particular tag
+    if(!rerun && !isempty(df) && (String(Symbol(package)),tag) ∈ collect(zip(df.solver,df.tag)))
+        println("Found existing results for ", package)
+        return df
+    end 
+    #delete any existing results if rerunning with this tag 
+    if(rerun && !isempty(df)) 
+        println("Will rerun results for ", package)
+        idx = String(Symbol(package)) .== df.solver .&& tag .== df.tag
+        df = df[.!idx,:] 
+    end
 
-    h = performance_profile(df,plotlist=plotlist,ok_status=ok_status)
+    println("Solving with ", package)
+
+    settings = ClarabelBenchmarks.SOLVER_CONFIG[Symbol(package)]
+    result = ClarabelBenchmarks.run_benchmarks_inner(
+        package.Optimizer, classkey; 
+        settings = settings,
+        verbose = verbose,
+        exclude = exclude,
+        time_limit = time_limit)
+
+    result[!,:tag] .= tag
+
+    result[!,:solver] .= String(Symbol(package))
+
+    allowmissing!(result)
+    df = [df;result]
+
+    df = sort!(df,[:group, :problem])
+    println("Saving...")
+    jldsave(savefile; df)   
+
+    return df
+  
+end
+
+
+function benchmark(packages, classkey; exclude = Regex[], time_limit = Inf, 
+        verbose = false, tag = nothing, rerun = false, plotlist = nothing, ok_status = nothing)
+    
+    df = DataFrame()
+
+    println(packages)
+
+    for package in packages 
+
+        result = run_benchmark!(package, classkey; 
+                        exclude = exclude, 
+                        time_limit = time_limit, 
+                        verbose = verbose, 
+                        tag = tag,
+                        rerun = rerun)
+
+        allowmissing!(result)
+        df = [df;result]
+
+    end 
+
+    h = performance_profile(df,plotlist = plotlist, ok_status = ok_status)
+    
+    filename = "bench_" * classkey * ".pdf"
+    plotfile = joinpath(get_results_path(),filename)
     savefig(h,plotfile)
+
     return df
 
 end

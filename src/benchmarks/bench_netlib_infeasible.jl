@@ -15,8 +15,8 @@ rerun   = false
 # the purpose of performance profiles
 ok_status = ["INFEASIBLE","DUAL_INFEASIBLE","PRIMAL_INFEASIBLE"]
 
-df = ClarabelBenchmarks.bench_common(
-    @__FILE__, solvers, class;
+df = ClarabelBenchmarks.benchmark(
+    solvers, class;
     time_limit = time_limit,
     verbose = verbose, rerun = rerun,
     ok_status = ok_status)

@@ -33,7 +33,12 @@ ClarabelBenchmarks.PROBLEMS["maros"]["maros_AUG2D"](model)
 
 The Rust implementation comes with an (undocumented) interface to Julia for benchmarking. It can be built via `cargo` in the Rust repository using 
 ```
-cargo build --features --julia
+cargo build --release --features julia
+```
+
+If you want to benchmark SDP problems, you will need to specify an appropriate SDP feature with BLAS support, e.g. on OSX you can use the native Accelerate framework
+```
+cargo build --release --features julia,sdp-accelerate
 ```
 
 You will also need to manually add the `ClarabelRs` package to your Julia environment.  It lives in the `Clarabel.rs` github repository in `<repo>/src/julia/ClarabelRs`.   

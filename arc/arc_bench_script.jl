@@ -1,10 +1,22 @@
+
+
+using ClarabelBenchmarks
+using Clarabel, ClarabelRs
+
 # get the solver package as a Module 
 task_id     = Base.parse(Int, ENV["SLURM_ARRAY_TASK_ID"])
-package_str = Base.parse(String, ENV["MODULE_NUMBER_" * task_id])
-package     = eval(Meta.parse(module_name))
+package_str = ENV["MODULE_NUMBER_" * string(task_id)]
+package     = eval(Meta.parse(package_str))
 
 # get the benchmark suite target 
-classkey    = Base.parse(String, ENV["CLASS_KEY" * task_id])
+classkey    = ENV["BENCHMARK_CLASS_KEY"]
 
-println("The package is ", package)
-println("The  is ", classkey)
+#max solve time per problem
+time_limit     = Base.parse(Int, ENV["BENCHMARK_PROBLEM_TIME_LIMIT"])
+time_limit     = Float64(time_limit)
+
+ClarabelBenchmarks.run_benchmark!(package, classkey; 
+               time_limit = time_limit, 
+               verbose = false
+	       )
+	       

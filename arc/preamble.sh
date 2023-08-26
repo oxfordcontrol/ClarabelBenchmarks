@@ -6,4 +6,4 @@ module load intel
 
 # builds enviroment variables for optimization packages 
 # and assigns them numbers. Useful for SLURM arrays
-source preamble.sh
+source modules.sh

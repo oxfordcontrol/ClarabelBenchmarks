@@ -13,6 +13,8 @@ time_limit = 300.
 rerun = false
 plotlist = [Mosek,ClarabelRs,ECOS,Hypatia]
 
+solvers = [Clarabel,Mosek]
+
 df = ClarabelBenchmarks.benchmark(
     solvers, class;
     time_limit = time_limit,

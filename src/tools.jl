@@ -332,19 +332,34 @@ function get_problem_data(group,name)
 
 end
 
-function get_results_path()
+# target directory for results.   
+function get_path_results()
 
-    results_path = joinpath(@__DIR__,"../results")
-    ispath(results_path) || mkdir(results_path)
+    path = joinpath(@__DIR__,"../results")
+    ispath(path) || mkdir(path)
 
-    return results_path
+    return path
+end
+
+# target directory for jld2 data.  
+function get_path_results_jld2()
+
+    path = joinpath(get_path_results(),"jld2")
+    ispath(path) || mkdir(path)
+
+    return path
+end
+
+# target directory for plots.  
+function get_path_results_plots()
+    get_path_results()
 end
 
 
 function run_benchmark!(package, classkey; exclude = Regex[], time_limit = Inf, verbose = false, tag = nothing, rerun = false)
 
     filename = "bench_" * classkey * "_" * String(Symbol(package)) * ".jld2"
-    savefile = joinpath(get_results_path(),filename)
+    savefile = joinpath(get_path_results_jld2(),filename)
 
     if isfile(savefile)
         println("Loading benchmark data from: ", savefile)
@@ -425,7 +440,7 @@ function benchmark(packages, classkey; exclude = Regex[], time_limit = Inf,
     h = performance_profile(df,plotlist = plotlist, ok_status = ok_status)
     
     filename = "bench_" * classkey * ".pdf"
-    plotfile = joinpath(get_results_path(),filename)
+    plotfile = joinpath(get_path_results_plots(),filename)
     savefig(h,plotfile)
 
     return df

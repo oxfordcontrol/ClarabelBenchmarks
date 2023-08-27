@@ -6,13 +6,13 @@ using Clarabel, ECOS, OSQP, HiGHS, Hypatia
 using Gurobi, MosekTools
 using ClarabelRs
 
-solvers = [Clarabel,Mosek,ClarabelRs,ECOS,Gurobi,OSQP,HiGHS]
+solvers = [Clarabel,Mosek,ClarabelRs,ECOS,Gurobi,HiGHS]
 tag     = nothing
 class   = "opf_lp"
 verbose = false
 time_limit = 120.
 rerun = false
-plotlist = [Mosek,ClarabelRs,ECOS,Gurobi,OSQP,HiGHS]
+plotlist = [Mosek,ClarabelRs,ECOS,Gurobi,HiGHS]
 
 df = ClarabelBenchmarks.benchmark(
     solvers, class;

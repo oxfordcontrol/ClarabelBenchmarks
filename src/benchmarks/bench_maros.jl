@@ -14,9 +14,6 @@ time_limit = 120.
 rerun = false
 plotlist = [Mosek,ClarabelRs,ECOS,Gurobi,OSQP,Hypatia,HiGHS]
 
-solvers = [Clarabel]
-rerun = true 
-tag = nothing
 
 df = ClarabelBenchmarks.benchmark(
     solvers, class;

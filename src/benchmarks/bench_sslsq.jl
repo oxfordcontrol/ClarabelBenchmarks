@@ -6,13 +6,13 @@ using Clarabel, ECOS, OSQP, HiGHS, Hypatia
 using Gurobi, MosekTools
 using ClarabelRs
 
-solvers = [Clarabel,Mosek,ClarabelRs,ECOS,Gurobi,OSQP,Hypatia,HiGHS]
+solvers = [Clarabel,Mosek,ClarabelRs,ECOS,Gurobi,OSQP,HiGHS]
 class   = "sslsq"
 verbose = false
 time_limit = 120.
 tag     = nothing
 rerun   = false
-plotlist = [Mosek,ClarabelRs,ECOS,Gurobi,Hypatia,HiGHS]
+plotlist = [Clarabel,Mosek,ClarabelRs,ECOS,Gurobi,Hypatia,HiGHS]
 
 
 df = ClarabelBenchmarks.benchmark(

@@ -14,8 +14,8 @@ rerun = false
 plotlist = [Mosek,ClarabelRs,ECOS,Clarabel]
 ok_status = ["OPTIMAL","SLOW_PROGRESS","ALMOST_OPTIMAL"]
 
-solvers = [Clarabel,ClarabelRs]
-rerun = true 
+solvers = [Clarabel,Mosek]
+
 
 df = ClarabelBenchmarks.benchmark(
     solvers, class;

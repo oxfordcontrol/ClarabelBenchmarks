@@ -408,8 +408,15 @@ function run_benchmark!(package, classkey; exclude = Regex[], time_limit = Inf, 
     df = [df;result]
 
     df = sort!(df,[:group, :problem])
+
+    #gather some basic system information 
+    cpu_model = Sys.cpu_info()[1].model
+    cpu_speed = Sys.cpu_info()[1].speed
+    host_name = gethostname()
+    clarabel_defaults = Clarabel.Settings()
+
     println("Saving...")
-    jldsave(savefile; df)   
+    jldsave(savefile; df, cpu_model, cpu_speed, host_name, clarabel_defaults)   
 
     return df
   

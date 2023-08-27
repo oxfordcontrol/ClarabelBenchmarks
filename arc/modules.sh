@@ -5,7 +5,7 @@
 # arguments in SLURM since it only takes integer arguments 
 
 # Input list of words separated by spaces
-module_list="Clarabel ClarabelRs Mosek Gurobi OSQP Hypatia HiGHS Tulip SCS"
+module_list="Clarabel ClarabelRs Mosek Gurobi ECOS OSQP SCS HiGHS Hypatia Tulip"
 
 # Split the module list into an array of words
 IFS=" " read -r -a modules <<< "$module_list"

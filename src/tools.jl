@@ -411,7 +411,6 @@ function run_benchmark!(package, classkey; exclude = Regex[], time_limit = Inf, 
 
     #gather some basic system information 
     cpu_model = Sys.cpu_info()[1].model
-    cpu_speed = Sys.cpu_info()[1].speed
     host_name = gethostname()
     clarabel_defaults = Clarabel.Settings()
 

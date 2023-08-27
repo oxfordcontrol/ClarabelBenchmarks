@@ -12,7 +12,7 @@ class   = "maros"
 verbose = false
 time_limit = 120.
 rerun = false
-plotlist = [Mosek,ClarabelRs,ECOS,Gurobi,OSQP,Hypatia,HiGHS]
+plotlist = [Clarabel,Mosek,ClarabelRs,ECOS,Gurobi,OSQP,Hypatia,HiGHS]
 
 
 df = ClarabelBenchmarks.benchmark(

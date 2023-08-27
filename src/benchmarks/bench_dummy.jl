@@ -1,12 +1,11 @@
 # Run benchmarks on dummy problems.   For debugging only
 
 # include any solvers you want to test 
-using ClarabelBenchmarks, DataFrames, JLD2
-using Clarabel, ECOS, OSQP, HiGHS, Hypatia
-using Gurobi, MosekTools
-using ClarabelRs
+using ClarabelBenchmarks, DataFrames
 
-solvers = [Clarabel,ClarabelRs,Mosek]
+using MosekTools, Clarabel, ClarabelRs, Gurobi, ECOS, OSQP, SCS, HiGHS, Hypatia, Tulip
+
+solvers = [Clarabel, ClarabelRs, Gurobi, ECOS, OSQP, SCS, HiGHS, Hypatia, Tulip, Mosek]
 tag     = nothing
 class   = "dummy"
 verbose = false

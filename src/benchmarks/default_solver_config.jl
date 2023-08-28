@@ -8,12 +8,14 @@ SOLVER_CONFIG = Dict{Symbol,SettingsDict}()
 
 #Clarabel (Julia version )
 SOLVER_CONFIG[:Clarabel] = SettingsDict(
-    #:direct_solve_method => :hsl_ma57
+    :iterative_refinement_reltol => 1e-13,
+    :iterative_refinement_abstol => 1e-12,
 )
 
 #Clarabel (Rust version )
-SOLVER_CONFIG[:ClarabelRs] = SettingsDict(
-)
+SOLVER_CONFIG[:ClarabelRs] = SOLVER_CONFIG[:Clarabel]
+# SOLVER_CONFIG[:ClarabelRs] = SettingsDict(
+# )
 
 #ECOS
 SOLVER_CONFIG[:ECOS] = SettingsDict(

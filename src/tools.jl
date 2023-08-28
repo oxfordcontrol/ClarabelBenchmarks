@@ -221,14 +221,14 @@ function remote_solve(time_limit,classkey,test_name,optimizer_factory,settings,v
     println("calling remote solve")
     model = Model(optimizer_factory)
 
-    for (key,val) in settings 
-        set_optimizer_attribute(model, string(key), val)
-    end
-
     if(verbose == false); 
         set_silent(model); 
     else 
         unset_silent(model); 
+    end
+    
+    for (key,val) in settings 
+        set_optimizer_attribute(model, string(key), val)
     end
     
     #not all solver support setting time limits. Looking at you, ECOS.
@@ -412,10 +412,10 @@ function run_benchmark!(package, classkey; exclude = Regex[], time_limit = Inf, 
     #gather some basic system information 
     cpu_model = Sys.cpu_info()[1].model
     host_name = gethostname()
-    clarabel_defaults = Clarabel.Settings()
+    solver_config = ClarabelBenchmarks.SOLVER_CONFIG
 
     println("Saving...")
-    jldsave(savefile; df, cpu_model, cpu_speed, host_name, clarabel_defaults)   
+    jldsave(savefile; df, cpu_model, host_name, solver_config)   
 
     return df
   

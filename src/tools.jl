@@ -335,8 +335,7 @@ end
 # target directory for results.   
 function get_path_results()
 
-    path = joinpath(@__DIR__,"../results")
-    ispath(path) || mkdir(path)
+    path = mkpath(joinpath(@__DIR__,"../results"))
 
     return path
 end
@@ -344,8 +343,13 @@ end
 # target directory for jld2 data.  
 function get_path_results_jld2()
 
-    path = joinpath(get_path_results(),"jld2")
-    ispath(path) || mkdir(path)
+    path = mkpath(joinpath(get_path_results(),"jld2"))
+
+    # if this environment variable is set (e.g. via ARC/HPC), then
+    # write into this subdirectory instead
+    if(haskey(ENV,"BENCHMARK_RESULTS_OUTPUTDIR"))
+	path = mkpath(joinpath(path,ENV["BENCHMARK_RESULTS_OUTPUTDIR"]))
+    end
 
     return path
 end
@@ -360,6 +364,12 @@ function run_benchmark!(package, classkey; exclude = Regex[], time_limit = Inf, 
 
     filename = "bench_" * classkey * "_" * String(Symbol(package)) * ".jld2"
     savefile = joinpath(get_path_results_jld2(),filename)
+
+    #gather some basic system information
+    cpu_model = Sys.cpu_info()[1].model
+    host_name = gethostname()
+    solver_config = ClarabelBenchmarks.SOLVER_CONFIG
+
 
     if isfile(savefile)
         println("Loading benchmark data from: ", savefile)
@@ -377,6 +387,7 @@ function run_benchmark!(package, classkey; exclude = Regex[], time_limit = Inf, 
         println("Saving benchmark data to new file: ", savefile)
         df = DataFrame()
     end
+
 
     #skip if already run for this solver with this particular tag
     if(!rerun && !isempty(df) && (String(Symbol(package)),tag) ∈ collect(zip(df.solver,df.tag)))
@@ -406,13 +417,7 @@ function run_benchmark!(package, classkey; exclude = Regex[], time_limit = Inf, 
 
     allowmissing!(result)
     df = [df;result]
-
     df = sort!(df,[:group, :problem])
-
-    #gather some basic system information 
-    cpu_model = Sys.cpu_info()[1].model
-    host_name = gethostname()
-    solver_config = ClarabelBenchmarks.SOLVER_CONFIG
 
     println("Saving...")
     jldsave(savefile; df, cpu_model, host_name, solver_config)   

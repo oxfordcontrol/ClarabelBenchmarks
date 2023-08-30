@@ -5,7 +5,7 @@ TASKS_PER_NODE=2
 
 # default subdirectory of ...results/jld2 for outputs.  Overrideable
 # by setting $BENCHMARK_RESULTS_OUTPUTDIR
-BENCHMARK_RESULTS_OUTPUTDIR_DEFAULT="foo"
+BENCHMARK_RESULTS_OUTPUTDIR_DEFAULT="tol_10_10"
 
 #configure for output to default subdirectory if not user specified                                                                                                                                           
 [ -z $BENCHMARK_RESULTS_OUTPUTDIR ] && BENCHMARK_RESULTS_OUTPUTDIR=$BENCHMARK_RESULTS_OUTPUTDIR_DEFAULT
@@ -22,10 +22,10 @@ content="#!/bin/bash
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=paul.goulart@eng.ox.ac.uk
 #SBATCH --constraint="cpu_sku:Platinum_8268,cpu_frq:2.90GHz,cpu_mem:3TB"                                                                                                                                      
-#SBATCH --partition=long
+#SBATCH --partition=short
 #SBATCH --mem-per-cpu=32G
 #SBATCH --qos=priority
-#SBATCH --array="$BENCHMARK_SOLVER_ARRAY"
+#SBATCH --array=1,2
 
 #load modules and define julia package env variables
 source preamble.sh

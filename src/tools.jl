@@ -79,6 +79,10 @@ function run_benchmarks_inner(
         #solve and log results
         groups[classkey][test_name] = solve_with_timeout(time_limit,classkey,test_name,optimizer_factory,settings,verbose)
 
+	#flush messages - useful when HPC logging
+	flush(Base.stdout)
+	flush(Base.stderr)
+
     end
 
     return post_process_benchmarks(groups)

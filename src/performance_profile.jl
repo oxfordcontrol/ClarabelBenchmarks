@@ -133,8 +133,8 @@ function time_profile(df; plotlist = nothing, ok_status = nothing)
     h = plot()
     n = length(problems)
 
-    min_time = minimum(df[df.status .∈ [ok], :].solve_time) 
-    max_time = maximum(df[df.status .∈ [ok], :].solve_time) 
+    min_time = minimum(df[df.status .∈ [ok_status], :].solve_time) 
+    max_time = maximum(df[df.status .∈ [ok_status], :].solve_time) 
     min_time = 10^(floor(log10(min_time)))
     max_time = 10^(ceil(log10(max_time)))
     time_ticks = (10.).^(log10(min_time):1.:log10(max_time))
@@ -147,7 +147,7 @@ function time_profile(df; plotlist = nothing, ok_status = nothing)
         thisdf = df[df.solver .== tagged_solver[1] .&& df.tag .== tagged_solver[2], :]
         nattempts = nrow(thisdf)
         
-        t = thisdf[thisdf.status .∈ [ok], :].solve_time 
+        t = thisdf[thisdf.status .∈ [ok_status], :].solve_time 
         t = sort(t) 
         y = collect(1:length(t)) / nattempts
         t = [min_time; t; max_time]

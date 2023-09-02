@@ -8,8 +8,9 @@ SOLVER_CONFIG = Dict{Symbol,SettingsDict}()
 
 #Clarabel (Julia version )
 SOLVER_CONFIG[:Clarabel] = SettingsDict(
-    :iterative_refinement_reltol => 1e-10,
-    :iterative_refinement_abstol => 1e-10,
+    #:iterative_refinement_reltol => 1e-11,
+    #:iterative_refinement_abstol => 1e-10,
+    #:static_regularization_constant => 1e-9,
 )
 
 #Clarabel (Rust version )

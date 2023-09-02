@@ -12,7 +12,7 @@ class   = "opf_sdp"
 verbose = false
 time_limit = 300.
 rerun = false
-plotlist = [ClarabelRs,Mosek,SCS]
+plotlist = solvers
 
 df = ClarabelBenchmarks.benchmark(
     solvers, class;

@@ -12,7 +12,7 @@ class   = "opf_lp"
 verbose = false
 time_limit = 120.
 rerun = false
-plotlist = [Mosek,ClarabelRs,ECOS,Gurobi,HiGHS]
+plotlist = [Mosek,Clarabel,ClarabelRs,ECOS,Gurobi,HiGHS]
 
 df = ClarabelBenchmarks.benchmark(
     solvers, class;

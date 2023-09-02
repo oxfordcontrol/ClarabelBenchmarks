@@ -11,7 +11,7 @@ class   = "cblib_socp"
 verbose = false
 time_limit = 300.
 rerun = false
-plotlist = [Mosek,ClarabelRs,ECOS]
+plotlist = solvers
 
 df = ClarabelBenchmarks.benchmark(
     solvers, class;

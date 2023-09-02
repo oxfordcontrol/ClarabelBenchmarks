@@ -2,8 +2,8 @@ using Plots, JLD2,DataFrames, ColorSchemes
 
 function get_style(solver,tag)
 
-    cs = ColorSchemes.seaborn_colorblind
-    solvers = ["Clarabel","Mosek","Gurobi","ClarabelRs","ECOS","Hypatia","HiGHS","OSQP"]
+    cs = ColorSchemes.tab10
+    solvers = ["Clarabel","Mosek","Gurobi","ClarabelRs","ECOS","Hypatia","HiGHS","OSQP","SCS","Tulip"]
 
     # get the color for the solver in the order above
     idx = findfirst(solver .== solvers) 
@@ -36,10 +36,10 @@ function get_style(solver,tag)
 
 end
 
-function performance_profile(df; plotlist = nothing, ok_status = nothing)
+function performance_profile(df; plotlist = nothing, ok_status = nothing, filter_solvable=true)
 
     best     = Dict()
-    problems = unique(df.problem)
+    df = deepcopy(df)
     tagged_solvers_all = collect(zip(df.solver,df.tag))
     tagged_solvers_unique  = unique(tagged_solvers_all)
     tagged_solvers_unique = sort(tagged_solvers_unique, by = (x) -> x[1])
@@ -52,6 +52,23 @@ function performance_profile(df; plotlist = nothing, ok_status = nothing)
     if(isnothing(ok_status))
         ok_status = ["OPTIMAL"]
     end
+
+    #solver is assumed solvable if *any* solver could achieve ok_status
+    #remove the unsolvable ones
+    if filter_solvable
+        problems = unique(df.problem)
+        for p in problems
+            if !any(df.problem .== p .&& df.status .∈ [ok_status])
+                println("filtering out $p")
+                filter!(row -> row.problem != p, df)
+            end
+        end
+    end
+
+    problems = unique(df.problem)
+
+    #print problems not solved by Gurobi
+    print(df[df.solver .== "Gurobi" .&& .!(df.status .∈ [ok_status]),:])
 
     #find the best time for each problem 
     for problem in problems 

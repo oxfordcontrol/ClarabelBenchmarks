@@ -19,4 +19,5 @@ df = ClarabelBenchmarks.benchmark(
     solvers, class;
     time_limit = time_limit,
     verbose = verbose, rerun = rerun,
-    ok_status = ok_status)
+    ok_status = ok_status,
+    plotlist = [Mosek,Clarabel,ClarabelRs,Gurobi,HiGHS])

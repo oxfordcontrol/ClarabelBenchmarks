@@ -2,7 +2,7 @@
 
 # include any solvers you want to test 
 using ClarabelBenchmarks, DataFrames, JLD2
-using Clarabel, ECOS, Gurobi, MosekTools
+using Clarabel, ECOS, Gurobi, MosekTools,Hypatia
 using ClarabelRs
 
 solvers = [Mosek,Clarabel,ECOS,ClarabelRs,Hypatia]

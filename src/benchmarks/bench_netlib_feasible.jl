@@ -1,6 +1,7 @@
 # Run benchmarks on netlib feasible LPs
 
 # include any solvers you want to test 
+using ClarabelBenchmarks, DataFrames, JLD2
 using Clarabel, ECOS, OSQP, HiGHS, Hypatia
 using Gurobi, MosekTools
 using ClarabelRs

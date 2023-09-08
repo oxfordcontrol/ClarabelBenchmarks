@@ -20,13 +20,3 @@ df = ClarabelBenchmarks.benchmark(
     verbose = verbose, tag = tag, rerun = rerun,
     plotlist = plotlist)
 
-# for some problems, none of the solvers produce an optimal 
-# solution.   Assume that these are actually infeasible and 
-# remove them from the dataframe
-
-problems = unique(df.problem)
-for p in problems
-    if !any(df.problem .== p .&& df.status .== "OPTIMAL")
-        filter!(row -> row.problem != p, df)
-    end
-end

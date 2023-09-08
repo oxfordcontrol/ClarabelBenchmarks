@@ -12,7 +12,7 @@ solvers = [ClarabelRs,Gurobi,Mosek,Clarabel,ECOS,HiGHS]
 class   = "lp"
 verbose = false
 time_limit = 180.
-rerun = true
+rerun = false
 
 df = ClarabelBenchmarks.benchmark(
     solvers, class;

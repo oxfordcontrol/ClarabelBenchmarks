@@ -36,9 +36,21 @@ function get_style(solver,tag)
 
 end
 
+function drop_unsolvable!(df,ok_status)
+
+    #solver is assumed solvable if *any* solver could achieve ok_status
+    #remove the unsolvable ones
+    problems = unique(df.problem)
+    for p in problems
+        if !any(df.problem .== p .&& df.status .∈ [ok_status])
+                filter!(row -> row.problem != p, df)
+        end
+    end
+end 
+
 function performance_profile(df; plotlist = nothing, ok_status = nothing, filter_solvable=true)
 
-    best     = Dict()
+    best = Dict()
     df = deepcopy(df)
     tagged_solvers_all = collect(zip(df.solver,df.tag))
     tagged_solvers_unique  = unique(tagged_solvers_all)
@@ -56,19 +68,11 @@ function performance_profile(df; plotlist = nothing, ok_status = nothing, filter
     #solver is assumed solvable if *any* solver could achieve ok_status
     #remove the unsolvable ones
     if filter_solvable
-        problems = unique(df.problem)
-        for p in problems
-            if !any(df.problem .== p .&& df.status .∈ [ok_status])
-                println("filtering out $p")
-                filter!(row -> row.problem != p, df)
-            end
-        end
-    end
+        drop_unsolvable!(df,ok_status)
+    end 
 
+    #all remaining problems
     problems = unique(df.problem)
-
-    #print problems not solved by Gurobi
-    print(df[df.solver .== "Gurobi" .&& .!(df.status .∈ [ok_status]),:])
 
     #find the best time for each problem 
     for problem in problems 
@@ -114,7 +118,7 @@ function performance_profile(df; plotlist = nothing, ok_status = nothing, filter
         ylabelfontsize = 8,
         legendfontsize = 6,
         xlims=[1,100],
-        ylims=[0,1.],
+        ylims=[0,1.001],
         xticks=[1,10,100,100],
         yticks=0.0:0.2:1.0,
         minorgrid=true,
@@ -146,6 +150,14 @@ function time_profile(df; plotlist = nothing, ok_status = nothing)
     if(isnothing(ok_status))
         ok_status = ["OPTIMAL"]
     end
+
+    #solver is assumed solvable if *any* solver could achieve ok_status
+    #remove the unsolvable ones
+    drop_unsolvable!(df,ok_status)
+
+    #all remaining problems
+    problems = unique(df.problem)
+
 
     h = plot()
     n = length(problems)

@@ -448,9 +448,15 @@ function benchmark(packages, classkey; exclude = Regex[], time_limit = Inf,
 
     end 
 
+    #performance profile 
+    filename = "bench_" * classkey * "_performance.pdf"
     h = performance_profile(df,plotlist = plotlist, ok_status = ok_status)
-    
-    filename = "bench_" * classkey * ".pdf"
+    plotfile = joinpath(get_path_results_plots(),filename)
+    savefig(h,plotfile)
+
+    #time profile 
+    filename = "bench_" * classkey * "_time.pdf"
+    h = time_profile(df,plotlist = plotlist, ok_status = ok_status)
     plotfile = joinpath(get_path_results_plots(),filename)
     savefig(h,plotfile)
 

@@ -1,6 +1,7 @@
 # Run benchmarks on netlib infeasible LPs
 
 # include any solvers you want to test 
+using ClarabelBenchmarks, DataFrames, JLD2
 using Clarabel, ECOS, OSQP, HiGHS, Hypatia
 using Gurobi, MosekTools
 using ClarabelRs
@@ -20,4 +21,4 @@ df = ClarabelBenchmarks.benchmark(
     time_limit = time_limit,
     verbose = verbose, rerun = rerun,
     ok_status = ok_status,
-    plotlist = [Mosek,Clarabel,ClarabelRs,Gurobi,HiGHS])
+    plotlist = solvers)

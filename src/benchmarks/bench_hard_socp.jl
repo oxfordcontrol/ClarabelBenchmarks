@@ -11,6 +11,9 @@ class   = "hard_socp"
 verbose = false
 time_limit = 120.
 rerun = false
+solvers = [Clarabel]
+
+
 plotlist = [Mosek,ClarabelRs,ECOS,Clarabel]
 ok_status = ["OPTIMAL"]
 

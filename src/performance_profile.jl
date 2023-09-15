@@ -138,6 +138,8 @@ end
 
 function time_profile(df; plotlist = nothing, ok_status = nothing)
 
+    df = deepcopy(df)
+
     problems = unique(df.problem)
     tagged_solvers_all = collect(zip(df.solver,df.tag))
     tagged_solvers_unique  = unique(tagged_solvers_all)

@@ -8,10 +8,10 @@ using ClarabelRs
 solvers = [Mosek,Clarabel,ECOS,ClarabelRs]
 tag     = nothing
 class   = "hard_socp"
-verbose = false
+verbose = true
 time_limit = 120.
-rerun = false
-solvers = [Clarabel]
+rerun = true
+solvers = [ClarabelRs,Clarabel]
 
 
 plotlist = [Mosek,ClarabelRs,ECOS,Clarabel]

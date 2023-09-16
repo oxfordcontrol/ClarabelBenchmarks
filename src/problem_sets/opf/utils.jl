@@ -1,15 +1,20 @@
 #exclude files with more than this many nodes
 #since the problem build times are very long.
-#this is only used for the SDP problems
-MAX_POWER_MODEL_NODES = 2000
+#or the solve times are huge for most solvers .
 
-function is_number_of_nodes_ok(testname)
+MAX_POWER_MODEL_NODES = Dict{String,Int}()
+MAX_POWER_MODEL_NODES["sdp"] = 1800 
+MAX_POWER_MODEL_NODES["socp"] = 19000
+MAX_POWER_MODEL_NODES["lp"] = typemax(Int)
+
+
+function is_number_of_nodes_ok(testname,group)
 
     r = r"case[0-9]+" #regex to match case number + nodes 
     idx = findfirst(r,testname)
     nodes_str = testname[idx][5:end] #remove "case" prefix 
     nodes     = parse(Int,nodes_str) #convert to int 
-    return nodes <= MAX_POWER_MODEL_NODES 
+    return nodes <= MAX_POWER_MODEL_NODES[group]
 
 end 
 

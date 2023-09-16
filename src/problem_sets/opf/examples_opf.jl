@@ -33,11 +33,9 @@ for (group,opf_model_type) in pairs(groups)
 
     for (test_name,filepath) in pairs(tests)
 
-    #limit the size of the SDP problems
-    #since the build times are very long
-    if(group == "sdp")
-        is_number_of_nodes_ok(test_name) || continue
-    end
+    #filter out problems with too many nodes
+    #since some of these problems are very slow
+    is_number_of_nodes_ok(test_name,group) || continue
 
     fcn_name = Symbol(group_name * "_" * test_name)
 

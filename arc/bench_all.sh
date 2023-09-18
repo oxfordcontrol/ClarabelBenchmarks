@@ -16,3 +16,5 @@
 ./bench_qp.sh
 ./bench_socp.sh
 ./bench_sdp.sh
+./bench_pow.sh
+./bench_genpow.sh

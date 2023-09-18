@@ -2,11 +2,11 @@
 
 # include any solvers you want to test 
 using ClarabelBenchmarks, DataFrames, JLD2
-using Clarabel, ECOS, Hypatia
+using Clarabel, ECOS, Hypatia, SCS
 using Gurobi, MosekTools
 using ClarabelRs
 
-solvers = [Mosek,Clarabel,SCS,ClarabelRs]
+solvers = [Mosek,Clarabel,ClarabelRs]
 tag     = nothing
 class   = "cblib_pow"
 verbose = false

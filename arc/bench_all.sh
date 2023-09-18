@@ -2,6 +2,7 @@
 
 ./bench_cblib_exp.sh
 ./bench_cblib_socp.sh
+./bench_cblib_pow.sh
 ./bench_maros.sh
 ./bench_maros_shifted.sh
 ./bench_mpc.sh

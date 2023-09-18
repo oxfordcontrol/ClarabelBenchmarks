@@ -17,6 +17,7 @@ module ClarabelBenchmarks
     include("./problem_sets/qp/include.jl")
     include("./problem_sets/socp/include.jl")
     include("./problem_sets/sos/include.jl")
+    include("./problem_sets/pow/include.jl")
     include("./problem_sets/sslsq/include.jl")
     include("./problem_sets/mpc/include.jl")
     include("./problem_sets/opf/include.jl")

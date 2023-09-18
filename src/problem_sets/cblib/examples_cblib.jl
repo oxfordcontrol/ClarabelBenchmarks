@@ -15,11 +15,12 @@ for group_test_pair in cblib_get_test_names()
     group, file_name = (group_test_pair[1],group_test_pair[2])
     group_name = "cblib_" * group
 
-    #replace "-" with "_" for functions 
-    fcn_name   = Symbol(group_name * "_" *  replace(file_name,"-" => "_") )
+    #replace "-" with "_" for keys and functions 
+    key_name   = replace(file_name,"-" => "_") 
+    fcn_name   = Symbol(group_name * "_" *  key_name)
 
     @eval begin
-            @add_problem $group_name $fcn_name function $fcn_name(
+            @add_problem $group_name $key_name function $fcn_name(
                 model,
             )
                 return cblib_generic(model, $group, $file_name)

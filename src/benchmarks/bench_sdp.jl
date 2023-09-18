@@ -1,13 +1,14 @@
-# Run benchmarks on CBLIB SOCP problems
+# Run benchmarks on SDP problems from PowerModels.jl
 
 # include any solvers you want to test 
 using ClarabelBenchmarks, DataFrames, JLD2
-using Clarabel, ECOS, Gurobi, MosekTools
+using Clarabel
+using SCS, MosekTools
 using ClarabelRs
 
-solvers = [Mosek,Clarabel,ECOS,ClarabelRs]
+solvers = [Clarabel,Mosek,ClarabelRs,SCS,Hypatia]
 tag     = nothing
-class   = "cblib_socp"
+class   = "sdp"
 verbose = false
 time_limit = 300.
 rerun = false

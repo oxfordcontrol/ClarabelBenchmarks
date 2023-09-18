@@ -12,10 +12,7 @@ verbose = false
 time_limit = 120.
 rerun = false
 plotlist = [Mosek,ClarabelRs,ECOS,Clarabel]
-ok_status = ["OPTIMAL","SLOW_PROGRESS","ALMOST_OPTIMAL"]
-
-solvers = [Clarabel,ClarabelRs]
-rerun = true 
+ok_status = ["OPTIMAL"]
 
 df = ClarabelBenchmarks.benchmark(
     solvers, class;
@@ -24,13 +21,3 @@ df = ClarabelBenchmarks.benchmark(
     plotlist = plotlist,
     ok_status = ok_status)
 
-# for some problems, none of the solvers produce an optimal 
-# solution.   Assume that these are actually infeasible and 
-# remove them from the dataframe
-
-problems = unique(df.problem)
-for p in problems
-    if !any(df.problem .== p .&& df.status .∈ [ok_status])
-        filter!(row -> row.problem != p, df)
-    end
-end

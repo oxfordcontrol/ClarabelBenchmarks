@@ -6,13 +6,13 @@ using Clarabel, ECOS, Hypatia
 using Gurobi, MosekTools
 using ClarabelRs
 
-solvers = [Mosek,Clarabel,ECOS,ClarabelRs,Hypatia]
+solvers = [Mosek,Clarabel,ECOS,ClarabelRs]
 tag     = nothing
 class   = "cblib_exp"
 verbose = false
 time_limit = 300.
 rerun = false
-plotlist = [Mosek,ClarabelRs,ECOS,Hypatia]
+plotlist = solvers
 
 df = ClarabelBenchmarks.benchmark(
     solvers, class;

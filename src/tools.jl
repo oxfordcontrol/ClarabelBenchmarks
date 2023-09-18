@@ -79,6 +79,10 @@ function run_benchmarks_inner(
         #solve and log results
         groups[classkey][test_name] = solve_with_timeout(time_limit,classkey,test_name,optimizer_factory,settings,verbose)
 
+	#flush messages - useful when HPC logging
+	flush(Base.stdout)
+	flush(Base.stderr)
+
     end
 
     return post_process_benchmarks(groups)
@@ -221,14 +225,14 @@ function remote_solve(time_limit,classkey,test_name,optimizer_factory,settings,v
     println("calling remote solve")
     model = Model(optimizer_factory)
 
-    for (key,val) in settings 
-        set_optimizer_attribute(model, string(key), val)
-    end
-
     if(verbose == false); 
         set_silent(model); 
     else 
         unset_silent(model); 
+    end
+    
+    for (key,val) in settings 
+        set_optimizer_attribute(model, string(key), val)
     end
     
     #not all solver support setting time limits. Looking at you, ECOS.
@@ -332,19 +336,44 @@ function get_problem_data(group,name)
 
 end
 
-function get_results_path()
+# target directory for results.   
+function get_path_results()
 
-    results_path = joinpath(@__DIR__,"../results")
-    ispath(results_path) || mkdir(results_path)
+    path = mkpath(joinpath(@__DIR__,"../results"))
 
-    return results_path
+    return path
+end
+
+# target directory for jld2 data.  
+function get_path_results_jld2()
+
+    path = mkpath(joinpath(get_path_results(),"jld2"))
+
+    # if this environment variable is set (e.g. via ARC/HPC), then
+    # write into this subdirectory instead
+    if(haskey(ENV,"BENCHMARK_RESULTS_OUTPUTDIR"))
+	path = mkpath(joinpath(path,ENV["BENCHMARK_RESULTS_OUTPUTDIR"]))
+    end
+
+    return path
+end
+
+# target directory for plots.  
+function get_path_results_plots()
+    get_path_results()
 end
 
 
 function run_benchmark!(package, classkey; exclude = Regex[], time_limit = Inf, verbose = false, tag = nothing, rerun = false)
 
     filename = "bench_" * classkey * "_" * String(Symbol(package)) * ".jld2"
-    savefile = joinpath(get_results_path(),filename)
+    savefile = joinpath(get_path_results_jld2(),filename)
+
+    #gather some basic system information
+    cpu_model = Sys.cpu_info()[1].model
+    host_name = gethostname()
+    solver_config = ClarabelBenchmarks.SOLVER_CONFIG
+
 
     if isfile(savefile)
         println("Loading benchmark data from: ", savefile)
@@ -362,6 +391,7 @@ function run_benchmark!(package, classkey; exclude = Regex[], time_limit = Inf, 
         println("Saving benchmark data to new file: ", savefile)
         df = DataFrame()
     end
+
 
     #skip if already run for this solver with this particular tag
     if(!rerun && !isempty(df) && (String(Symbol(package)),tag) ∈ collect(zip(df.solver,df.tag)))
@@ -391,10 +421,10 @@ function run_benchmark!(package, classkey; exclude = Regex[], time_limit = Inf, 
 
     allowmissing!(result)
     df = [df;result]
-
     df = sort!(df,[:group, :problem])
+
     println("Saving...")
-    jldsave(savefile; df)   
+    jldsave(savefile; df, cpu_model, host_name, solver_config)   
 
     return df
   
@@ -422,10 +452,16 @@ function benchmark(packages, classkey; exclude = Regex[], time_limit = Inf,
 
     end 
 
+    #performance profile 
+    filename = "bench_" * classkey * "_performance.pdf"
     h = performance_profile(df,plotlist = plotlist, ok_status = ok_status)
-    
-    filename = "bench_" * classkey * ".pdf"
-    plotfile = joinpath(get_results_path(),filename)
+    plotfile = joinpath(get_path_results_plots(),filename)
+    savefig(h,plotfile)
+
+    #time profile 
+    filename = "bench_" * classkey * "_time.pdf"
+    h = time_profile(df,plotlist = plotlist, ok_status = ok_status)
+    plotfile = joinpath(get_path_results_plots(),filename)
     savefig(h,plotfile)
 
     return df

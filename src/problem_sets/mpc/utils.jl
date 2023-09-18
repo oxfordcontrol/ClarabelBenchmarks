@@ -3,6 +3,10 @@ using JuMP, MathOptInterface, MAT
 function mpc_get_test_names()
 
     srcpath = joinpath(@__DIR__,"targets/")
+
+    # force path creation, e.g. if matlab make wasn't run
+    ispath(srcpath) || mkdir(srcpath)
+
     #get Maros archive path and get names of data files
     files = filter(endswith(".mat"), readdir(srcpath))
     return [splitext(f)[1] for f in files]

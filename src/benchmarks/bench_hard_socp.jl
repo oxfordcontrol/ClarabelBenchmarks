@@ -1,4 +1,4 @@
-# Run benchmarks on CBLIB SOCP problems
+# Run benchmarks on SOCP problems from PowerModels.jl
 
 # include any solvers you want to test 
 using ClarabelBenchmarks, DataFrames, JLD2
@@ -7,14 +7,20 @@ using ClarabelRs
 
 solvers = [Mosek,Clarabel,ECOS,ClarabelRs]
 tag     = nothing
-class   = "cblib_socp"
-verbose = false
-time_limit = 300.
-rerun = false
-plotlist = solvers
+class   = "hard_socp"
+verbose = true
+time_limit = 120.
+rerun = true
+solvers = [ClarabelRs,Clarabel]
+
+
+plotlist = [Mosek,ClarabelRs,ECOS,Clarabel]
+ok_status = ["OPTIMAL"]
 
 df = ClarabelBenchmarks.benchmark(
     solvers, class;
     time_limit = time_limit,
     verbose = verbose, tag = tag, rerun = rerun,
-    plotlist = plotlist)
+    plotlist = plotlist,
+    ok_status = ok_status)
+

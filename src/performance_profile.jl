@@ -2,8 +2,8 @@ using Plots, JLD2,DataFrames, ColorSchemes
 
 function get_style(solver,tag)
 
-    cs = ColorSchemes.seaborn_colorblind
-    solvers = ["Clarabel","Mosek","Gurobi","ClarabelRs","ECOS","Hypatia","HiGHS","OSQP"]
+    cs = ColorSchemes.tab10
+    solvers = ["Clarabel","Mosek","Gurobi","ClarabelRs","ECOS","Hypatia","HiGHS","OSQP","SCS","Tulip"]
 
     # get the color for the solver in the order above
     idx = findfirst(solver .== solvers) 
@@ -36,21 +36,43 @@ function get_style(solver,tag)
 
 end
 
-function performance_profile(df; plotlist = nothing, ok_status = nothing)
+function drop_unsolvable!(df,ok_status)
 
-    best     = Dict()
+    #solver is assumed solvable if *any* solver could achieve ok_status
+    #remove the unsolvable ones
     problems = unique(df.problem)
+    for p in problems
+        if !any(df.problem .== p .&& df.status .∈ [ok_status])
+                filter!(row -> row.problem != p, df)
+        end
+    end
+end 
+
+function performance_profile(df; plotlist = nothing, ok_status = nothing, filter_solvable=true)
+
+    best = Dict()
+    df = deepcopy(df)
     tagged_solvers_all = collect(zip(df.solver,df.tag))
     tagged_solvers_unique  = unique(tagged_solvers_all)
     tagged_solvers_unique = sort(tagged_solvers_unique, by = (x) -> x[1])
 
     if(!isnothing(plotlist))
         tagged_solvers_unique = filter(x -> x[1] ∈ String.(Symbol.(plotlist)), tagged_solvers_unique)
+        df = df[df.solver .∈ [String.(Symbol.(plotlist))],:]
     end
 
     if(isnothing(ok_status))
         ok_status = ["OPTIMAL"]
     end
+
+    #solver is assumed solvable if *any* solver could achieve ok_status
+    #remove the unsolvable ones
+    if filter_solvable
+        drop_unsolvable!(df,ok_status)
+    end 
+
+    #all remaining problems
+    problems = unique(df.problem)
 
     #find the best time for each problem 
     for problem in problems 
@@ -96,7 +118,7 @@ function performance_profile(df; plotlist = nothing, ok_status = nothing)
         ylabelfontsize = 8,
         legendfontsize = 6,
         xlims=[1,100],
-        ylims=[0,1.],
+        ylims=[0,1.001],
         xticks=[1,10,100,100],
         yticks=0.0:0.2:1.0,
         minorgrid=true,
@@ -114,7 +136,9 @@ end
 
 
 
-function time_profile(df; plotlist = nothing)
+function time_profile(df; plotlist = nothing, ok_status = nothing)
+
+    df = deepcopy(df)
 
     problems = unique(df.problem)
     tagged_solvers_all = collect(zip(df.solver,df.tag))
@@ -125,13 +149,23 @@ function time_profile(df; plotlist = nothing)
         tagged_solvers_unique = filter(x -> x[1] ∈ String.(Symbol.(plotlist)), tagged_solvers_unique)
     end
 
-    ok = ["OPTIMAL","ALMOST_OPTIMAL","LOCALLY_SOLVED"]
+    if(isnothing(ok_status))
+        ok_status = ["OPTIMAL"]
+    end
+
+    #solver is assumed solvable if *any* solver could achieve ok_status
+    #remove the unsolvable ones
+    drop_unsolvable!(df,ok_status)
+
+    #all remaining problems
+    problems = unique(df.problem)
+
 
     h = plot()
     n = length(problems)
 
-    min_time = minimum(df[df.status .∈ [ok], :].solve_time) 
-    max_time = maximum(df[df.status .∈ [ok], :].solve_time) 
+    min_time = minimum(df[df.status .∈ [ok_status], :].solve_time) 
+    max_time = maximum(df[df.status .∈ [ok_status], :].solve_time) 
     min_time = 10^(floor(log10(min_time)))
     max_time = 10^(ceil(log10(max_time)))
     time_ticks = (10.).^(log10(min_time):1.:log10(max_time))
@@ -144,7 +178,7 @@ function time_profile(df; plotlist = nothing)
         thisdf = df[df.solver .== tagged_solver[1] .&& df.tag .== tagged_solver[2], :]
         nattempts = nrow(thisdf)
         
-        t = thisdf[thisdf.status .∈ [ok], :].solve_time 
+        t = thisdf[thisdf.status .∈ [ok_status], :].solve_time 
         t = sort(t) 
         y = collect(1:length(t)) / nattempts
         t = [min_time; t; max_time]

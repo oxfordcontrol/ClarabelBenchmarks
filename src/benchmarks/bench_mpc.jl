@@ -12,7 +12,7 @@ class   = "mpc"
 verbose = false
 time_limit = 10.
 rerun = false
-plotlist = [Mosek,ClarabelRs,ECOS,Gurobi,Hypatia,HiGHS]
+plotlist = [Mosek,Clarabel,ClarabelRs,ECOS,Gurobi,Hypatia,HiGHS]
 
 df = ClarabelBenchmarks.benchmark(
     solvers, class;

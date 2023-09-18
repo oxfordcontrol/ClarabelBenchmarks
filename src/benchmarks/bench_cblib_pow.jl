@@ -1,13 +1,14 @@
-# Run benchmarks on CBLIB SOCP problems
+# Run benchmarks on CBLIB ExpCone problems
 
 # include any solvers you want to test 
 using ClarabelBenchmarks, DataFrames, JLD2
-using Clarabel, ECOS, Gurobi, MosekTools
+using Clarabel, ECOS, Hypatia
+using Gurobi, MosekTools
 using ClarabelRs
 
-solvers = [Mosek,Clarabel,ECOS,ClarabelRs]
+solvers = [Mosek,Clarabel,SCS,ClarabelRs]
 tag     = nothing
-class   = "cblib_socp"
+class   = "cblib_pow"
 verbose = false
 time_limit = 300.
 rerun = false

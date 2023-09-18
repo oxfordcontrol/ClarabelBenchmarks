@@ -10,7 +10,10 @@ export BENCHMARK_CLASS_KEY="opf_socp"
 export BENCHMARK_PROBLEM_TIME_LIMIT=300
 
 #total runtime timeout per solver for this set of problems
-export BENCHMARK_SLURM_TIME_LIMIT=12:00:00
+export BENCHMARK_SLURM_TIME_LIMIT=11:00:00
+
+#non standard partition since time limit exceeds short partition bound
+export BENCHMARK_SLURM_PARTITION="short"
 
 #the list of solvers to test   
 export BENCHMARK_SOLVER_ARRAY="\

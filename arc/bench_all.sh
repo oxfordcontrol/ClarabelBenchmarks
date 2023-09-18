@@ -11,3 +11,7 @@
 ./bench_opf_sdp.sh
 ./bench_opf_socp.sh
 ./bench_sslsq.sh
+./bench_lp.sh
+./bench_qp.sh
+./bench_socp.sh
+./bench_sdp.sh

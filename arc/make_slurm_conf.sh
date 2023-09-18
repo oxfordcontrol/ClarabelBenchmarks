@@ -5,10 +5,19 @@ TASKS_PER_NODE=2
 
 # default subdirectory of ...results/jld2 for outputs.  Overrideable
 # by setting $BENCHMARK_RESULTS_OUTPUTDIR
-BENCHMARK_RESULTS_OUTPUTDIR_DEFAULT="tol_full"
+BENCHMARK_RESULTS_OUTPUTDIR_DEFAULT="dev06"
+
+# default slurm partitiont.  Overrideable by setting $BENCHMARK_SLURM_PARTITION                                                                                     
+BENCHMARK_SLURM_PARTITION_DEFAULT="short"
+
+#--------------------------------------
+#--------------------------------------
 
 #configure for output to default subdirectory if not user specified                                                                                                                                           
 [ -z $BENCHMARK_RESULTS_OUTPUTDIR ] && BENCHMARK_RESULTS_OUTPUTDIR=$BENCHMARK_RESULTS_OUTPUTDIR_DEFAULT
+
+#configure for output to default subdirectory if not user specified
+[ -z $BENCHMARK_SLURM_PARTITION ] && BENCHMARK_SLURM_PARTITION=$BENCHMARK_SLURM_PARTITION_DEFAULT
 
 # Define the SLURM configuration settings
 content="#!/bin/bash
@@ -21,10 +30,8 @@ content="#!/bin/bash
 #SBATCH --ntasks-per-node="$TASKS_PER_NODE"
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=paul.goulart@eng.ox.ac.uk
-#SBATCH --constraint="cpu_sku:Platinum_8268,cpu_frq:2.90GHz,cpu_mem:3TB"                                          
-#SBATCH --partition=short
+#SBATCH --partition="$BENCHMARK_SLURM_PARTITION"
 #SBATCH --mem-per-cpu=32G
-#SBATCH --qos=priority
 #SBATCH --array=1,2
 
 #load modules and define julia package env variables
@@ -36,11 +43,19 @@ export BENCHMARK_RESULTS_OUTPUTDIR="$BENCHMARK_RESULTS_OUTPUTDIR"
 $DATA/julia -t $TASKS_PER_NODE arc_bench_script.jl
 "
 
+#dump the julia / rust branches
+echo "Julia config...."
+git -C $HOME/projects/clarabel/julia status
+
+echo "Rust config...."
+git -C $HOME/projects/clarabel/rust status
+
 
 # Dump to a slurm configuration file
 confFile="$1_slurm.conf"
 echo "$content" > "$confFile"
 echo "SLURM configuration written to \"$confFile\":"
+echo "writing outputs to target: $BENCHMARK_RESULTS_OUTPUTDIR"
 
 # run sbatch with this configuration
 sbatch $confFile

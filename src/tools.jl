@@ -5,6 +5,7 @@ using JuMP, DataFrames
 using MathOptInterface
 using Clarabel
 using Distributed
+using PrettyTables
 
 const MOI = MathOptInterface
 
@@ -360,7 +361,12 @@ end
 
 # target directory for plots.  
 function get_path_results_plots()
-    get_path_results()
+    mkpath(joinpath(get_path_results(),"plots"))
+end
+
+# target directory for plots.  
+function get_path_results_tables()
+    mkpath(joinpath(get_path_results(),"tables"))
 end
 
 
@@ -464,7 +470,31 @@ function benchmark(packages, classkey; exclude = Regex[], time_limit = Inf,
     plotfile = joinpath(get_path_results_plots(),filename)
     savefig(h,plotfile)
 
+    #shifted means as a CSV file 
+    filename = "bench_" * classkey * "_sgm.tex"
+    filename = joinpath(get_path_results_tables(),filename)
+    out = shifted_geometric_means(df, plotlist = plotlist, ok_status = ok_status)
+    write_sgm_table_file(filename,out)
     return df
 
 end
 
+function write_sgm_table_file(filename,out)
+
+
+    table = hcat(out[:,1],out)  #addes extra leading column
+    data = out[1:end,2:end]
+    headers = ["","",names(out)[2:end]...]  #drops "solvers"
+    alignment = [:l,:l,fill(:c,length(headers)-2)...]
+
+    #now we have 2 leading columns, with 4 rows.  
+    #Give them custom strings
+    table[:,1] = ["Shifted GM","","Failure Rate (%)",""]
+    table[:,2] = ["Full Acc.","Low Acc.","Full Acc.","Low Acc."]
+
+    io = open(filename, "w");
+    pretty_table(io, table,header = headers, alignment = alignment, backend = Val(:latex))
+
+    close(io)
+
+end

@@ -5,7 +5,7 @@ using ClarabelBenchmarks, DataFrames, JLD2
 using Clarabel, ClarabelRs
 using MosekTools,Hypatia
 
-solvers = [Clarabel,Mosek,ClarabelRs,Hypatia]
+solvers = [Clarabel,Mosek,ClarabelRs]
 tag     = nothing
 class   = "pow"
 verbose = false

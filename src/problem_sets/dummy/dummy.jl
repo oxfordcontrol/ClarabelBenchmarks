@@ -72,3 +72,17 @@ end
 end
 
 
+@add_problem dummy mixed function dummy_mixedcone(
+    model,
+)
+    @variable(model, x[1:2,1:2])
+    @constraint(model, x in PSDCone())
+    @constraint(model, x[:] in SecondOrderCone())
+    @constraint(model, x[1] <= 2)
+    @objective(model, Min, (x[1] + x[2] + x[3])^2 + x[1] + 2*x[2])
+    optimize!(model)
+
+    return nothing
+end
+
+

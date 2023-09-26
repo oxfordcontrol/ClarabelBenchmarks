@@ -1,4 +1,4 @@
-using Plots, JLD2,DataFrames, ColorSchemes
+using Plots, JLD2,DataFrames, ColorSchemes, StatsBase, CSV
 
 function get_style(solver,tag)
 
@@ -210,5 +210,122 @@ function time_profile(df; plotlist = nothing, ok_status = nothing)
     display(h)
 
     return h
+
+end
+
+function sgm(t,k)
+
+    exp(mean(log.(t .+ k))) - k
+
+end 
+
+
+function shifted_geometric_means(df; plotlist = nothing, ok_status = nothing, max_time = 300)
+
+    k = 1.0
+
+    df = deepcopy(df)
+    solvers = unique(df.solver)
+    sgm_optimal = Float64[]
+    sgm_almost = Float64[]
+    failrate_optimal = Float64[]
+    failrate_almost = Float64[]
+
+    println("Solvers are $solvers 1")
+    println("plotlist is ", plotlist)
+
+    println("type of plotlist ", typeof(plotlist))
+
+    
+    if(!isnothing(plotlist))
+        solvers = filter(x -> x ∈ String.(Symbol.(plotlist)), solvers)
+    end
+
+    solvers = sort(solvers)
+
+    println("Solvers are $solvers 1b")
+
+    if all(["Clarabel","ClarabelRs"] .∈ [solvers])  #assumes we will be first alpha
+        solvers = sort(setdiff(solvers, ["Clarabel","ClarabelRs"]))
+        println("Solvers are $solvers 1c")
+        solvers = [["ClarabelRs","Clarabel"];solvers]
+    end
+
+    if(isnothing(ok_status))
+        ok_status = ["OPTIMAL"]
+    end
+    
+
+    println("Solvers are $solvers 2")
+    
+    almost_ok_status = ["ALMOST_OPTIMAL"]
+    if("OPTIMAL" ∈ [ok_status])
+        almost_ok_status = ["ALMOST_OPTIMAL","SLOW_PROGRESS","LOCALLY_SOLVED"]
+    end
+    if("INFEASIBLE" ∈ [ok_status])
+        almost_ok_status = ["ALMOST_INFEASIBLE"]
+    end
+
+    #solver is assumed solvable if *any* solver could achieve ok_status
+    #remove the unsolvable ones
+    drop_unsolvable!(df,ok_status)
+
+    #all remaining problems
+    problems = unique(df.problem)
+    n = length(problems)
+
+    println("Solvers are $solvers 3")
+
+
+    for solver in solvers 
+
+        println("Solver is ... $solver")
+
+        thisdf = df[df.solver .== solver, :]
+        @assert n == nrow(thisdf) 
+        thisdf[ismissing.(thisdf.solve_time), :].status .= max_time 
+    
+        # enforce max solve time cap
+        times_optimal = min.(thisdf.solve_time,max_time)
+        times_almost  = min.(thisdf.solve_time,max_time)
+
+        #round up to max time for bad solvers 
+        is_not_optimal = thisdf.status .∉ [ok_status]
+        is_not_almost  = thisdf.status .∉  [union(almost_ok_status,ok_status)]
+        times_optimal[is_not_optimal,:] .= max_time
+        times_almost[is_not_almost,:] .= max_time
+
+        #compute shited geometric means 
+        push!(sgm_optimal, sgm(times_optimal,k))
+        push!(sgm_almost , sgm(times_almost, k))
+
+        #count the success rates 
+        push!(failrate_optimal, mean(is_not_optimal))
+        push!(failrate_almost, mean(is_not_almost))
+
+
+
+    end 
+
+    #normalize 
+    sgm_optimal ./=  minimum(sgm_optimal; init=Inf)
+    sgm_almost  ./=  minimum(sgm_almost;  init=Inf)
+
+    sgm_optimal = round.(sgm_optimal; digits=2)
+    sgm_almost = round.(sgm_almost; digits=2)
+
+    failrate_optimal = round.(failrate_optimal; digits=3).*100
+    failrate_almost = round.(failrate_almost; digits=3).*100
+
+    out = DataFrame(
+        solver = solvers, 
+        sgm_optimal = sgm_optimal, 
+        sgm_almost = sgm_almost,
+        failrate_optimal = failrate_optimal,
+        failrate_almost  = failrate_almost)
+
+    out = permutedims(out, 1)
+
+    return out 
 
 end

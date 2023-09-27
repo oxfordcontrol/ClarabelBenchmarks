@@ -1,4 +1,4 @@
-using Plots, JLD2,DataFrames, ColorSchemes, StatsBase, CSV
+using Plots, JLD2,DataFrames, ColorSchemes, StatsBase
 
 function get_style(solver,tag)
 

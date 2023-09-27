@@ -470,7 +470,7 @@ function benchmark(packages, classkey; exclude = Regex[], time_limit = Inf,
     plotfile = joinpath(get_path_results_plots(),filename)
     savefig(h,plotfile)
 
-    #shifted means as a CSV file 
+    #shifted means as a latex table  
     filename = "bench_" * classkey * "_sgm.tex"
     filename = joinpath(get_path_results_tables(),filename)
     out = shifted_geometric_means(df, plotlist = plotlist, ok_status = ok_status)

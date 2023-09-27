@@ -37,4 +37,3 @@ Tulip = "6dd1b50a-3aae-11e9-10b5-ef983d2400fa"
 
 [compat]
 DataFrames = "1.5"
-MathOptInterface = "1.18"

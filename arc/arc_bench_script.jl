@@ -27,7 +27,11 @@ flush(Base.stdout)
 flush(Base.stderr)
 
 #make into a variable of type Module
-package = eval(Meta.parse(package_str))
+if package_str == "Clarabel128"
+   package = ClarabelBenchmarks.Clarabel128
+else
+   package = eval(Meta.parse(package_str))
+end 
 
 # get the benchmark suite target 
 classkey    = ENV["BENCHMARK_CLASS_KEY"]

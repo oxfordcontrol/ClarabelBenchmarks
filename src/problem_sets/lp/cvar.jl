@@ -2,9 +2,7 @@ using Random, StatsBase, Distributions, SparseArrays, LinearAlgebra
 using JuMP
 
 
-@add_problem lp cvar function lp_cvar(
-    model,
-)
+function cvar_build(model)
 
     rng = Random.MersenneTwister(271324)
 
@@ -48,6 +46,10 @@ using JuMP
     @constraint(model, x .<= x_max)
     @objective(model, Min, dot(c,x))
 
-    optimize!(model)
+end 
 
+@add_problem lp cvar function lp_cvar(
+    model; kwargs...
+)
+    solve_generic(cvar_build, model; kwargs...)
 end

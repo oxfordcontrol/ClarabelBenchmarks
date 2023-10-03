@@ -7,7 +7,6 @@ function netlib_feasible_generic(
     @constraint(model, c1, Aineq*x .<= bineq)
     @constraint(model, c2, Aeq*x .== beq)
     @objective(model, Min, sum(c.*x))
-    optimize!(model)
 
     return nothing
 
@@ -22,7 +21,6 @@ function netlib_infeasible_generic(
     @constraint(model, c1, Aineq*x .<= bineq)
     @constraint(model, c2, Aeq*x .== beq)
     @objective(model, Min, sum(c.*x))
-    optimize!(model)
 
     return nothing
 
@@ -37,9 +35,9 @@ for test_name in netlib_feasible_get_test_names()
 
     @eval begin
             @add_problem $group_name $test_name function $fcn_name(
-                model,
+                model; kwargs...
             )
-                return netlib_feasible_generic(model,$test_name)
+                return solve_generic(netlib_feasible_generic,model,$test_name; kwargs...)
             end
     end
 end 
@@ -52,9 +50,9 @@ for test_name in netlib_infeasible_get_test_names()
 
     @eval begin
             @add_problem $group_name $test_name function $fcn_name(
-                model,
+                model; kwargs...
             )
-                return netlib_infeasible_generic(model,$test_name)
+                return solve_generic(netlib_infeasible_generic,model,$test_name; kwargs...)
             end
     end
 end 

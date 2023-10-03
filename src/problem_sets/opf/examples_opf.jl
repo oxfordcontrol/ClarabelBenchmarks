@@ -14,7 +14,6 @@ function power_models_generic(
         PowerModels.build_opf;
         jump_model = model,
     )
-    optimize!(model)
 
     return nothing
 
@@ -41,9 +40,9 @@ for (group,opf_model_type) in pairs(groups)
 
         @eval begin
                 @add_problem $group_name $test_name function $fcn_name(
-                    model,
+                    model; kwargs...
                 )
-                    return power_models_generic(model, $opf_model_type, $filepath)
+                    return solve_generic(power_models_generic,model, $opf_model_type, $filepath; kwargs...)
                 end
         end
     end 

@@ -4,8 +4,6 @@ function cblib_generic(
     cblib_problem
 )
     cblib_load(model, group, cblib_problem)
-    optimize!(model)
-
     return nothing
 
 end
@@ -21,9 +19,9 @@ for group_test_pair in cblib_get_test_names()
 
     @eval begin
             @add_problem $group_name $key_name function $fcn_name(
-                model,
+                model; kwargs...
             )
-                return cblib_generic(model, $group, $file_name)
+                return solve_generic(cblib_generic, model, $group, $file_name; kwargs...)
             end
     end
 end 

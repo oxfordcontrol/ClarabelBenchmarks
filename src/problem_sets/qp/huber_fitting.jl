@@ -2,20 +2,20 @@
 
 using Random
 
-function huber_fitting(model, n)
+function huber_fitting(model::GenericModel{T}, n) where{T}
 
     rng = Random.MersenneTwister(271324 + n)
 
-    p = 0.125
-    m = round(Int,1.5 * n)
+    p = T(0.125)
+    m = round(Int,T(1.5) * n)
 
-    A = sprandn(rng,m,n,0.125)
+    A = sprandn(rng,T,m,n,0.125)
 
-    x_true = randn(rng,n) / sqrt(n)
-    ind95 = (rand(rng,m) .< 0.95).*1.
+    x_true = randn(rng,T,n) / sqrt(n)
+    ind95 = (rand(rng,T,m) .< T(0.95)).*one(T)
     b = A*x_true .+
-        0.5*randn(rng,m).*ind95 .+
-        (10.).*rand(rng,m).*(1. .- ind95)
+        0.5*randn(rng,T,m).*ind95 .+
+        T(10).*rand(rng,T,m).*(1. .- ind95)
 
     @variable(model, u[1:m])
     @variable(model, r[1:m])
@@ -24,8 +24,7 @@ function huber_fitting(model, n)
     @constraint(model, r  .>= 0.)
     @constraint(model, s  .>= 0.)
     @constraint(model, A*x .- b .- u .== r .- s )
-    @objective(model, Min, dot(u,u) + 2 * ones(m)'*(r + s))
-    optimize!(model)
+    @objective(model, Min, dot(u,u) + 2 * ones(T,m)'*(r + s))
 
 end
 
@@ -40,9 +39,9 @@ for n in [10, 100, 500, 1000]
 
     @eval begin
         @add_problem $group_name $test_name function $fcn_name(
-            model,
+            model; kwargs...
         )
-            return huber_fitting(model,$n)
+            return solve_generic(huber_fitting,model,$n; kwargs...)
         end
     end
 end

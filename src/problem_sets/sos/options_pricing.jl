@@ -8,12 +8,12 @@
 using MultivariateMoments, DynamicPolynomials, JuMP, SumOfSquares
 
 
-function options_pricing(model, cone, K)
+function options_pricing(model::GenericModel{T}, cone, K) where {T}
 
     @polyvar x y z
-    σ = [184.04, 164.88, 164.88, 184.04, 164.88, 184.04]
-    X = [x^2, x*y, x*z, y^2, y*z, z^2, x, y, z, 1]
-    μ = measure([σ .+ 44.21^2; 44.21 * ones(3); 1], X)
+    σ = T[184.04, 164.88, 164.88, 184.04, 164.88, 184.04]
+    X = [x^2, x*y, x*z, y^2, y*z, z^2, x, y, z, one(T)]
+    μ = measure([σ .+ T(44.21)^2; T(44.21) * ones(T,3); one(T)], X)
 
     cocone = SumOfSquares.CopositiveInner(cone)
 
@@ -23,8 +23,6 @@ function options_pricing(model, cone, K)
     @constraint(model, p - (y - K) in cocone)
     @constraint(model, p - (z - K) in cocone)
     @objective(model, Min, dot(μ, p))
-
-    optimize!(model)
 
 end
 
@@ -48,9 +46,9 @@ for K in [5, 10, 20, 30, 35, 40, 45, 50]
 
     @eval begin
             @add_problem $group_name $test_name function $fcn_name(
-                model,
+                model; kwargs...
             )
-                return options_pricing(model,$conemap[$group],$K)
+                return solve_generic(options_pricing,model,$conemap[$group],$K; kwargs...)
             end
         end
     end

@@ -42,24 +42,22 @@ function lasso_data(Type::Type{T} = Float64) where {T <: AbstractFloat}
 
 end
 
-@add_problem socp lasso function socp_lasso(
-    model,
-)
+function socp_lasso_build(model::GenericModel{T}) where{T}
 
-    P,c,A,b,A1,A2,A3,b1,b2,b3 = lasso_data()
+    P,c,A,b,A1,A2,A3,b1,b2,b3 = lasso_data(T)
     n = length(c)
-
     @variable(model, x[1:n])
     @constraint(model, c1, A1*x .<= b1)
     @constraint(model, c2, A2*x .<= b2)
     @constraint(model, c3, b3-A3*x in SecondOrderCone())
-    @objective(model, Min, sum(c.*x) + 1/2*x'*P*x)
+    @objective(model, Min, sum(c.*x) + T(0.5)*x'*P*x)
 
-    optimize!(model)
+end 
 
-    return nothing
+
+@add_problem socp lasso function socp_lasso(
+    model; kwargs...
+)
+    solve_generic(socp_lasso_build, model; kwargs...)
 
 end
-
-
-

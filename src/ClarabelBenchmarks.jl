@@ -1,3 +1,5 @@
+using MultiFloats
+
 module ClarabelBenchmarks
 
     # main test function and problem def macros live here 
@@ -25,6 +27,17 @@ module ClarabelBenchmarks
 
     #plotting functions 
     include("./performance_profile.jl")
+
+    #add some extended precision arithmetic variations for Clarabel 
+    #to will appear to be separate solver types 
+    module Clarabel128
+        using Clarabel, MultiFloats
+        Optimizer = Clarabel.Optimizer{Float64x2}
+    end 
     
 end 
 
+#provide some MultiFloat methods for irrationals 
+function MultiFloat{T,N}(x::Irrational{S}) where {S,T,N} 
+    MultiFloat{T,N}(BigFloat(x; precision = precision(MultiFloat{T,N})))
+end 

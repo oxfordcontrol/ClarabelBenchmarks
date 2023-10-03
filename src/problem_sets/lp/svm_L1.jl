@@ -34,7 +34,6 @@ function lp_svm_L1(
     @constraint(model, t .>= 0)
     @constraint(model, [α; β] in MOI.NormOneCone(length(β) + 1))
     @objective(model, Min, sum(t)/m + λ*α)
-    optimize!(model)
 
 end
 
@@ -48,9 +47,9 @@ for n in [10, 20, 50, 100]
 
     @eval begin
         @add_problem $group_name $test_name function $fcn_name(
-            model,
+            model; kwargs...
         )
-            return lp_svm_L1(model,$n)
+            return solve_generic(lp_svm_L1,model,$n; kwargs...)
         end
     end
 end

@@ -15,7 +15,6 @@ function sslsq_lasso(
     @constraint(model, -t .<= x)
     @constraint(model, y .== A*x - b)
     @objective(model, Min, y'*y + λ*sum(t))
-    optimize!(model)
 
     return nothing
 
@@ -36,10 +35,6 @@ function sslsq_huber(
     @constraint(model,  s .>= 0)
     @constraint(model, A*x - b - u .== r - s )
     @objective(model, Min, u'*u + 2*M*sum(r+s))
-    optimize!(model)
-
-
-
 
     return nothing
 
@@ -55,9 +50,9 @@ for matrix_name in sslsq_get_test_names()
 
     @eval begin
             @add_problem $group_name $test_name function $fcn_name(
-                model,
+                model; kwargs...
             )
-                return sslsq_lasso(model,$matrix_name)
+                return solve_generic(sslsq_lasso,model,$matrix_name; kwargs...)
             end
     end
 end 
@@ -71,9 +66,9 @@ for matrix_name in sslsq_get_test_names()
 
     @eval begin
             @add_problem $group_name $test_name function $fcn_name(
-                model,
+                model; kwargs...
             )
-                return sslsq_huber(model,$matrix_name)
+                return solve_generic(sslsq_huber,model,$matrix_name; kwargs...)
             end
     end
 end 

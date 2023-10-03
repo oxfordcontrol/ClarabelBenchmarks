@@ -52,8 +52,6 @@ function max_vol_hypercube_pow(model, n)
         end
     end
 
-    optimize!(model)
-
 end 
 
 function max_vol_hypercube_genpow(model, n)
@@ -75,7 +73,6 @@ function max_vol_hypercube_genpow(model, n)
         error("Generalized power cone not supported by solver: ", solver_name(model))
     end 
 
-    optimize!(model)
 end 
 
 #generate problems according to problem size
@@ -91,9 +88,9 @@ for n in nsizes
     #3D power cone 
     @eval begin
         @add_problem $group_name $test_name function $fcn_name(
-            model,
+            model; kwargs...
         )
-            return max_vol_hypercube_pow(model,$n)
+            return solve_generic(max_vol_hypercube_powmodel,$n; kwargs...)
         end
     end
 
@@ -103,9 +100,9 @@ for n in nsizes
     #generalized power cone
     @eval begin
         @add_problem $group_name $test_name function $fcn_name(
-            model,
+            model; kwargs...
         )
-            return max_vol_hypercube_genpow(model,$n)
+            return solve_generic(max_vol_hypercube_genpow,model,$n; kwargs...)
         end
     end
 

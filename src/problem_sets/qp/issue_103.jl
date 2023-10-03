@@ -1,6 +1,13 @@
 # Problem case taken from https://github.com/oxfordcontrol/Clarabel.jl/issues/103
 
 @add_problem qp issue_103 function qp_issue_103(
+    model; kwargs...
+)
+    solve_generic(qp_issue_103_build,model; kwargs...)
+
+end
+
+function qp_issue_103_build(
     model,
 )
 
@@ -26,6 +33,5 @@
     @expression(model, pt2[i = 1:dims], sum(t[j]*points2[j][i] for j in 1:n2))
     @expression(model, d[i = 1:dims], pt1[i]-pt2[i])
     @objective(model, Min, sum(d[i]*d[i] for i in 1:dims))
-    optimize!(model)
-
-end
+    
+end 

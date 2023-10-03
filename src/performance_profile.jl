@@ -8,7 +8,7 @@ function get_style(solver,tag)
     # get the color for the solver in the order above
     idx = findfirst(solver .== solvers) 
     if(isnothing(idx)) 
-        idx = length(solvers) + 1
+        idx = length(solvers)
     end 
     color = cs[idx]
 

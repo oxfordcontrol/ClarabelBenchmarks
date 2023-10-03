@@ -1,8 +1,25 @@
+using JuMP 
+
+function mpc_cast_data(T, data)
+
+    for key in keys(data)
+        val = data[key]
+        if !isnothing(val) 
+            if (isa(val,AbstractMatrix) || isa(val,AbstractVector))
+                val = T.(val)
+                data[key] = val
+            end
+        end
+    end
+end 
+
 function mpc_solve_problem(
-    model,
+    model::GenericModel{FloatT},
     problem
-)
+) where{FloatT}
+
     data = mpc_load(problem)
+    mpc_cast_data(FloatT, data)
 
     #problem data as in Kouzoupis, eq(1)
     x0 = data["x0"]
@@ -108,7 +125,7 @@ function mpc_solve_problem(
     end
 
     
-    objective = 0
+    objective = zero(FloatT)
     for i in 1:ni
 
         if has_outputs
@@ -122,14 +139,15 @@ function mpc_solve_problem(
 
     if !isnothing(P)
         P = sparse(P)
-        objective += x[:,ni]'*P*x[:,ni]
+        if !isnothing(xNr)
+            v = x[:,ni] - xNr
+            objective += v'*P*v
+        else
+            objective += x[:,ni]'*P*x[:,ni]
+        end
     end
 
     @objective(model, Min, objective)
-
-
-
-    optimize!(model)
 
     return nothing
 
@@ -145,9 +163,9 @@ for test_name in mpc_get_test_names()
 
     @eval begin
             @add_problem $group_name $test_name function $fcn_name(
-                model,
+                model; kwargs...    
             )
-                return mpc_solve_problem(model,$test_name)
+                return solve_generic(mpc_solve_problem,model,$test_name; kwargs...)
             end
     end
 end 

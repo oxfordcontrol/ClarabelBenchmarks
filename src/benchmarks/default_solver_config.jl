@@ -18,6 +18,9 @@ SOLVER_CONFIG[:ClarabelRs] = SOLVER_CONFIG[:Clarabel]
 # SOLVER_CONFIG[:ClarabelRs] = SettingsDict(
 # )
 
+#Clarabel (128 bit version )
+SOLVER_CONFIG[Symbol("ClarabelBenchmarks.Clarabel128")] = SOLVER_CONFIG[:Clarabel]
+
 #ECOS
 SOLVER_CONFIG[:ECOS] = SettingsDict(
 )

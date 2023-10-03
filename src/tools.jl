@@ -1,11 +1,11 @@
 # Portions of this code are modified from Convex.jl,
 # which is available under an MIT license (see LICENSE).
 
-using JuMP, DataFrames
+using JuMP, DataFrames, MathOptInterface
 using MathOptInterface
 using Clarabel
 using Distributed
-using PrettyTables
+using PrettyTables, Printf
 
 const MOI = MathOptInterface
 
@@ -39,6 +39,29 @@ macro add_problem(group_name, test_name, q)
         dict[String($(Base.Meta.quot(test_name)))] = $(esc(name))
     end
 end
+
+function solve_generic(fcn, model, args...; solve = true)
+
+    if !isa(model, GenericModel) 
+        model = get_typed_model(model)  #convert to JuMP object
+    end
+
+    fcn(model, args...)
+
+    if solve
+        optimize!(model)
+    else 
+        #try to manually populate the solver model 
+        #without actually calling it 
+        MOI.Utilities.attach_optimizer(model)
+        JuMP.MOI.copy_to(
+            model.moi_backend.optimizer.model.optimizer,
+            model.moi_backend.optimizer.model
+        )
+    end
+    return model
+end
+
 
 function run_benchmarks_inner(
     optimizer_factory, 
@@ -169,7 +192,7 @@ function solve_with_timeout(time_limit,classkey,test_name,optimizer_factory,sett
             kill_worker(pid)
         end
         #if solver failed, get a summary for a blank model
-        solution = solution_summary(Model(optimizer_factory))
+        solution = solution_summary(get_typed_model(optimizer_factory))
     end 
     finalize(ch)
     return solution 
@@ -211,7 +234,7 @@ function run_dummy_problems_inner(optimizer_factory)
         #since we're just trying to force compilation.
         #note solvers will fail on these problems if they 
         #don't support the necessary cone types
-        model = Model(optimizer_factory)
+        model = get_typed_model(optimizer_factory)
         set_silent(model)
         try 
             test(model)
@@ -224,7 +247,7 @@ function remote_solve(time_limit,classkey,test_name,optimizer_factory,settings,v
 
     #create an empty model and pass to solver 
     println("calling remote solve")
-    model = Model(optimizer_factory)
+    model = get_typed_model(optimizer_factory)
 
     if(verbose == false); 
         set_silent(model); 
@@ -252,6 +275,25 @@ function remote_solve(time_limit,classkey,test_name,optimizer_factory,settings,v
     return solution_summary(model)
 end
 
+
+function get_typed_model(optimizer_factory)
+
+    # we want to allow for an optimizer_factory that produces non Float64 Clarabel solvers, 
+    # which in turn require direct use of JuMP GenericModels.   Handle this case separately 
+
+
+
+    if optimizer_factory <: Clarabel.Optimizer 
+        #check what type it produces 
+        T = collect(typeof(optimizer_factory()).parameters)[1]
+        if T != Float64
+            return GenericModel{T}(optimizer_factory)
+        end
+    end 
+ 
+
+    return Model(optimizer_factory)
+end
 
 
 
@@ -475,6 +517,15 @@ function benchmark(packages, classkey; exclude = Regex[], time_limit = Inf,
     filename = joinpath(get_path_results_tables(),filename)
     out = shifted_geometric_means(df, plotlist = plotlist, ok_status = ok_status)
     write_sgm_table_file(filename,out)
+
+
+    #tabulated results data 
+    filename = "bench_" * classkey * "_detail_table.tex"
+    filename = joinpath(get_path_results_tables(),filename)
+    tables = build_results_tables(df)
+    write_results_tables(tables,filename)
+
+
     return df
 
 end
@@ -482,7 +533,7 @@ end
 function write_sgm_table_file(filename,out)
 
 
-    table = hcat(out[:,1],out)  #addes extra leading column
+    table = hcat(out[:,1],out)  #adds extra leading column
     data = out[1:end,2:end]
     headers = ["","",names(out)[2:end]...]  #drops "solvers"
     alignment = [:l,:l,fill(:c,length(headers)-2)...]
@@ -498,3 +549,210 @@ function write_sgm_table_file(filename,out)
     close(io)
 
 end
+
+function build_results_tables(df)
+
+    problems = unique(df.problem)
+    solvers = unique(df.solver)
+    group = unique(df.group)[1]
+
+    #remove problems that are not in the current benchmark set 
+    #this will weed out some other results that were disabled
+    #due to slow computation times and hence not solved in all configs 
+    keepidx = df.problem .∈ [collect(keys(ClarabelBenchmarks.PROBLEMS[group]))]
+    df = df[keepidx,:]
+    problems = unique(df.problem)
+
+    println(length(problems), " remaining...")
+
+    solvers = sort(intersect(solvers,["ClarabelRs","ECOS","Mosek"]))
+
+    # insert columns for each solver, for iterations, time / iteration / total time
+    tables = Dict()
+    for format in [:iterations => Int, :iter_time => Float64, :total_time=>Float64]
+        #make a new table with solvers as the columns, and problems as the rows
+        tables[format[1]] = DataFrame()
+        insertcols!(tables[format[1]],  "" => problems)
+        for solver in solvers 
+            insertcols!(tables[format[1]],  solver => missings(format[2],length(problems)))
+        end 
+    end 
+
+    #get the problem dimensions 
+    tables[:dims] = DataFrame()
+    insertcols!(tables[:dims],  "" => problems)
+    insertcols!(tables[:dims],  :m => missings(Int,length(problems)))
+    insertcols!(tables[:dims],  :n => missings(Int,length(problems)))
+    insertcols!(tables[:dims],  :nnzP => missings(Int,length(problems)))
+    insertcols!(tables[:dims],  :nnzA => missings(Int,length(problems)))
+
+
+    #table of problem dimensions
+    for (i,problem) in enumerate(problems)
+        println("getting dimensions for " * problem)
+        model = ClarabelBenchmarks.PROBLEMS[group][problem](Clarabel.Optimizer; solve = false)
+        solver = model.moi_backend.optimizer.model.optimizer.solver
+        data = solver.data
+        tables[:dims][i,:m] = data.m 
+        tables[:dims][i,:n] = data.n
+        tables[:dims][i,:nnzA] = nnz(data.A)
+        tables[:dims][i,:nnzP] = nnz(data.P)
+    end 
+
+    # statistics for each solver / problem pair
+    for (i,problem) in enumerate(problems), solver in solvers 
+
+        iters      = df[df.problem .== problem .&& df.solver .== solver,:iterations][1]
+        total_time = df[df.problem .== problem .&& df.solver .== solver,:solve_time][1]
+        is_ok      = df[df.problem .== problem .&& df.solver .== solver,:status][1] .== "OPTIMAL"
+
+        if(is_ok)
+            
+            iter_time = iters > 0 ? total_time / iters : 0.0 
+
+            tables[:iterations][i,solver] = iters
+            tables[:iter_time][i,solver] = iter_time
+            tables[:total_time][i,solver] = total_time
+
+        end
+    end
+
+    #eliminate any unsolveable problems 
+    problems = tables[:iterations][:,1]
+    goodrows = trues(length(problems))
+    for (i,problem) in enumerate(problems)
+        if all(ismissing.(collect(tables[:total_time][i,2:end])))
+            goodrows[i] = false
+        end
+    end
+    for key in keys(tables)
+        tables[key] = tables[key][goodrows,:]
+    end
+
+    return tables
+
+end 
+
+function write_results_tables(tables,filename)
+
+
+    #sort by size?
+    perm =  sortperm(tables[:dims].n + tables[:dims].m)
+    for key in keys(tables)
+        tables[key] = tables[key][perm,:]
+    end
+
+    solvers = String.(names(tables[:iterations]))[2:end]
+    problems = String.(tables[:iterations][:,1])
+
+    io = open(filename, "w");
+
+    println(io,"\\scriptsize")
+
+    println(io,"\\begin{longtable}" * "{l" * "cccc" * "||ccc"^(length(solvers)) * "||}")
+
+    println(io,"\\caption{\\detailtablecaption}")
+    println(io,"\\\\")
+
+    #print primary headerss
+    print(io, " & &  & & ");
+    for label in ["iterations","time per iteration(s)", "total time (s)"]
+        print(io,"& \\multicolumn{3}{c||}{\\underline{$label}}");
+    end 
+    print(io, "\\\\[2ex] \n")
+
+    #print secondary headers
+    print(io, "Problem & vars. & cons. & nnz(A) & nnz(P) ");
+    for i = 1:3
+        for solver in solvers 
+            print(io," & $solver");
+        end 
+    end
+    print(io, "\\\\[1ex]\n")
+    
+    println(io,"\\hline")
+    println(io,"\\endhead")
+
+    for (i,problem) in enumerate(problems)
+
+        problem = replace(problem,"_" => raw"\_")
+        print(io, "\\sc{" * problem * "}")
+        print(io, " & ", tables[:dims][i,:m])
+        print(io, " & ", tables[:dims][i,:n])
+        print(io, " & ", tables[:dims][i,:nnzA])
+        print(io, " & ", tables[:dims][i,:nnzP])
+
+        best = "\\winner "
+
+        #iterations 
+        for solver in solvers 
+            iter       = tables[:iterations][i,solver]
+
+            #is this the best one in the row?
+            if isequal(iter, minimum(skipmissing(tables[:iterations][i,2:end])))
+                iter_tag = best
+            else 
+                iter_tag = ""
+            end
+
+            if(ismissing(iter))
+                iter = "-"
+            else 
+                iter = @sprintf("%d",iter)
+            end
+
+            print(io, " &  $iter_tag $iter")
+        end 
+
+        #time / iter 
+        for solver in solvers 
+            iter       = tables[:iterations][i,solver]
+            iter_time  = tables[:iter_time][i,solver]
+
+            #is this the best one in the row?
+            if isequal(iter_time, minimum(skipmissing(tables[:iter_time][i,2:end])))
+                iter_time_tag = best
+            else 
+                iter_time_tag = ""
+            end
+
+            if(ismissing(iter))
+                iter_time = "-"
+            else 
+                iter_time = @sprintf("%4.3g",iter_time)
+            end
+
+            print(io, " &  $iter_time_tag $iter_time")
+        end 
+
+        #total time 
+        for solver in solvers 
+            iter       = tables[:iterations][i,solver]
+            total_time = tables[:total_time][i,solver]
+
+            #is this the best one in the row?
+            if isequal(total_time, minimum(skipmissing(tables[:total_time][i,2:end])))
+                total_time_tag = best
+            else 
+                total_time_tag = ""
+            end
+
+            if(ismissing(iter))
+                total_time = "-"
+            else 
+                total_time = @sprintf("%4.3g",total_time)
+            end
+
+            print(io, " &  $total_time_tag $total_time")
+        end 
+        print(io, "\\\\ \n")
+
+    end 
+
+
+    println(io,"\\end{longtable}")
+
+    close(io)
+
+end
+

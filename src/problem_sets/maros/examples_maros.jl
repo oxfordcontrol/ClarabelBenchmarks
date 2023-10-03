@@ -1,9 +1,20 @@
+using JuMP
+
 function maros_generic(
-    model,
+    model::GenericModel{T},
     maros_problem,
     shift = false
-)
+) where {T}
     (P, c, Aineq, bineq, Aeq, beq) = maros_load(maros_problem)
+
+    #cast to T if needed, e.g. for BigFloat testing 
+    P = T.(P)
+    c = T.(c)
+    Aineq = T.(Aineq)
+    Aeq = T.(Aeq)
+    bineq = T.(bineq)
+    beq = T.(beq)
+
 
     if(shift)
         exp = -Inf
@@ -22,7 +33,7 @@ function maros_generic(
                     exp += 1
                 end
                 P.nzval .= origP.nzval
-                P += (10.)^(exp)*I
+                P += T(10.)^(exp)*I
             end
         end 
     end
@@ -30,8 +41,7 @@ function maros_generic(
     @variable(model, x[1:length(c)])
     @constraint(model, c1, Aineq*x .<= bineq)
     @constraint(model, c2, Aeq*x .== beq)
-    @objective(model, Min, sum(c.*x) + 1/2*x'*P*x)
-    optimize!(model)
+    @objective(model, Min, sum(c.*x) + T(1/2)*x'*P*x)
 
     return nothing
 
@@ -45,10 +55,10 @@ for test_name in maros_get_test_names()
 
     @eval begin
             @add_problem $group_name $test_name function $fcn_name(
-                model,
+                model; kwargs...
             )
-                return maros_generic(model,$test_name,$true)
-            end
+            return solve_generic(maros_generic,model,$test_name,$true; kwargs...)
+        end
     end
 end 
 
@@ -60,9 +70,9 @@ for test_name in maros_get_test_names()
 
     @eval begin
             @add_problem $group_name $test_name function $fcn_name(
-                model,
+                model; kwargs...
             )
-                return maros_generic(model,$test_name,$false)
+                return solve_generic(maros_generic,model,$test_name,$false; kwargs...)
             end
     end
 end 

@@ -46,8 +46,6 @@ function max_likelihood_pow(model, d)
         end
     end
 
-
-    optimize!(model)
 end 
 
 function max_likelihood_genpow(model, d)
@@ -68,7 +66,6 @@ function max_likelihood_genpow(model, d)
         error("Generalized power cone not supported by solver: ", solver_name(model))
     end 
 
-    optimize!(model)
 end 
 
 #generate problems according to problem size
@@ -84,9 +81,9 @@ for d in dsizes
     #3D power cone 
     @eval begin
         @add_problem $group_name $test_name function $fcn_name(
-            model,
+            model; kwargs...
         )
-            return max_likelihood_pow(model,$d)
+            return solve_generic(max_likelihood_pow,model,$d; kwargs...)
         end
     end
 
@@ -96,9 +93,9 @@ for d in dsizes
     #generalized power cone
     @eval begin
         @add_problem $group_name $test_name function $fcn_name(
-            model,
+            model; kwargs...
         )
-            return max_likelihood_genpow(model,$d)
+            return solve_generic(max_likelihood_genpow,model,$d; kwargs...)
         end
     end
 

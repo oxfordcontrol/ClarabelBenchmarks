@@ -5,10 +5,7 @@ Taken from https://stanford.edu/~boyd/papers/cvx_short_course.html
 Ported from python example implementation provided by Philipp Schiele
 """
 
-
-@add_problem lp optimal_advertising function lp_optimal_advertising(
-    model,
-)
+function optimal_advertise_build(model)
 
     rng = Random.MersenneTwister(271324)
     m = 40
@@ -41,6 +38,11 @@ Ported from python example implementation provided by Philipp Schiele
     @constraint(model,D .>= 0)
     @constraint(model,D' * ones(m) .<= T)
     @constraint(model,D  * ones(n) .>= c)
+end
 
-    optimize!(model)
+@add_problem lp optimal_advertising function lp_optimal_advertising(
+    model; kwargs...
+)
+
+    solve_generic(optimal_advertise_build, model; kwargs...)
 end

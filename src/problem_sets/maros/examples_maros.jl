@@ -20,11 +20,12 @@ function maros_generic(
         exp = -Inf
         origP = deepcopy(P)
         while true 
-            try cholesky(P)
+            try cholesky(P - (1e-3)*I)
                 println("Cholesky factorizability confirmed")
                 if(exp != -Inf)
                     println("Diagonal shifted by 10^$exp")
                 end
+                #shift it one more time by the next highest power to be sure 
                 break
             catch 
                 if(exp == -Inf)

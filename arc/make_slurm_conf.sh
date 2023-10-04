@@ -1,4 +1,4 @@
-#!/bin/bash
+ #!/bin/bash
 
 # tasks for node used by both SLURM and Julia
 TASKS_PER_NODE=2
@@ -31,8 +31,9 @@ content="#!/bin/bash
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=paul.goulart@eng.ox.ac.uk
 #SBATCH --partition="$BENCHMARK_SLURM_PARTITION"
-#SBATCH --mem-per-cpu=32G
-#SBATCH --array="$BENCHMARK_SOLVER_ARRAY"
+#SBATCH --exclusive
+#SBATCH --mem-per-cpu=64G
+#SBATCH --array="1,2"
 
 #load modules and define julia package env variables
 source preamble.sh
@@ -58,4 +59,4 @@ echo "SLURM configuration written to \"$confFile\":"
 echo "writing outputs to target: $BENCHMARK_RESULTS_OUTPUTDIR"
 
 # run sbatch with this configuration
-sbatch $confFile
+sbatch -v $confFile

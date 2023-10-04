@@ -14,7 +14,9 @@ package_str = ENV["MODULE_NUMBER_" * string(task_id)]
 #its package isn't the same name as the solver 
 if package_str == "Mosek"
    using MosekTools
-else 
+elseif package_str == "Clarabel128"
+   using Clarabel
+else
    eval(Meta.parse("using " * package_str))
 end 
 

@@ -5,7 +5,6 @@ using JuMP
     model; kwargs...
 )
 
-    println("Type of ", model)
     function build(model)
         @variable(model, x)
         @constraint(model, x >= 2)

@@ -26,7 +26,7 @@ function maros_generic(
 
 end
 
-function shift_P(P::SparseMatrixCSC) 
+function shift_P(P) 
 
     thresh = 1e-3 
     s      = -16

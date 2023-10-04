@@ -1,3 +1,4 @@
+
 # all benchmarks using this file for configuring 
 # individual solvers:
 
@@ -19,7 +20,9 @@ SOLVER_CONFIG[:ClarabelRs] = SOLVER_CONFIG[:Clarabel]
 # )
 
 #Clarabel (128 bit version )
-SOLVER_CONFIG[Symbol("ClarabelBenchmarks.Clarabel128")] = SOLVER_CONFIG[:Clarabel]
+SOLVER_CONFIG[Symbol("ClarabelBenchmarks.Clarabel128")] = SettingsDict(
+    :max_iter => 500,	
+)
 
 #ECOS
 SOLVER_CONFIG[:ECOS] = SettingsDict(

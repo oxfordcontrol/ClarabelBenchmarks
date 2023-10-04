@@ -1,6 +1,6 @@
 #!/bin/bash
 
-git -C $HOME/projects/clarabel/julia status
+git -C $HOME/projects/clarabel/rust status
 
 sbatch rust_compile.conf
 

@@ -7,6 +7,8 @@ function maros_generic(
 ) where {T}
     (P, c, Aineq, bineq, Aeq, beq) = maros_load(maros_problem)
 
+    shift && (P = shift_P(P))
+
     #cast to T if needed, e.g. for BigFloat testing 
     P = T.(P)
     c = T.(c)
@@ -14,30 +16,6 @@ function maros_generic(
     Aeq = T.(Aeq)
     bineq = T.(bineq)
     beq = T.(beq)
-
-
-    if(shift)
-        exp = -Inf
-        origP = deepcopy(P)
-        while true 
-            try cholesky(P - (1e-3)*I)
-                println("Cholesky factorizability confirmed")
-                if(exp != -Inf)
-                    println("Diagonal shifted by 10^$exp")
-                end
-                #shift it one more time by the next highest power to be sure 
-                break
-            catch 
-                if(exp == -Inf)
-                    exp = -15
-                else
-                    exp += 1
-                end
-                P.nzval .= origP.nzval
-                P += T(10.)^(exp)*I
-            end
-        end 
-    end
 
     @variable(model, x[1:length(c)])
     @constraint(model, c1, Aineq*x .<= bineq)
@@ -47,6 +25,24 @@ function maros_generic(
     return nothing
 
 end
+
+function shift_P(P::SparseMatrixCSC) 
+
+    thresh = 1e-3 
+    s      = -16
+        
+    P = P + eps()*I  #force nonzero diagonal terms 
+    origP = deepcopy(P)
+    
+    while true 
+        issuccess(cholesky(P - thresh*I; check = false)) && break
+        s += 1
+        P.nzval .= origP.nzval
+        P += ((10.)^s)*I
+    end 
+    P 
+end 
+
 
 #shifted versions 
 for test_name in maros_get_test_names()

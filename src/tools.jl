@@ -217,7 +217,6 @@ end
 function remote_solve_dummies(optimizer_factory)
 
     println("calling remote_solve_dummies with ", optimizer_factory)
-
     expr = quote ClarabelBenchmarks.run_dummy_problems_inner($optimizer_factory) end 
     eval(quote @everywhere $expr end)
 end
@@ -280,17 +279,19 @@ function get_typed_model(optimizer_factory)
 
     # we want to allow for an optimizer_factory that produces non Float64 Clarabel solvers, 
     # which in turn require direct use of JuMP GenericModels.   Handle this case separately 
+    # Some care is required though because Mosek.Optimizer is a function called "Optimizer", 
+    # instead of a subtype of AbstractOptimizer.  The equivalent Mosek subtype is 
+    # MosekTools.Optimizer, which probably should have been used everywhere instead.  
 
-
-
-    if optimizer_factory <: Clarabel.Optimizer 
-        #check what type it produces 
-        T = collect(typeof(optimizer_factory()).parameters)[1]
-        if T != Float64
-            return GenericModel{T}(optimizer_factory)
-        end
-    end 
- 
+    if !isa(optimizer_factory,Function)
+        if optimizer_factory <: Clarabel.Optimizer 
+            #check what type it produces 
+            T = collect(typeof(optimizer_factory()).parameters)[1]
+            if T != Float64
+                return GenericModel{T}(optimizer_factory)
+            end
+        end 
+    end
 
     return Model(optimizer_factory)
 end
@@ -436,7 +437,7 @@ function run_benchmark!(package, classkey; exclude = Regex[], time_limit = Inf, 
             df = DataFrame()
         end
     else 
-        println("Saving benchmark data to new file: ", savefile)
+            println("Saving benchmark data to new file: ", savefile)
         df = DataFrame()
     end
 

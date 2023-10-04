@@ -77,8 +77,6 @@ end
     end 
     
     solve_generic(build, model; kwargs...)
-
-    return nothing
 end
 
 

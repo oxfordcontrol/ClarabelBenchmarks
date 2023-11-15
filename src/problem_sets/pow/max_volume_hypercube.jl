@@ -90,7 +90,7 @@ for n in nsizes
         @add_problem $group_name $test_name function $fcn_name(
             model; kwargs...
         )
-            return solve_generic(max_vol_hypercube_powmodel,$n; kwargs...)
+            return solve_generic(max_vol_hypercube_pow,model,$n; kwargs...)
         end
     end
 

@@ -13,6 +13,13 @@ SOLVER_CONFIG[:Clarabel] = SettingsDict(
     #:static_regularization_constant => 1e-9,
 )
 
+#Clarabel (Julia version, on GPU)
+SOLVER_CONFIG[Symbol("ClarabelBenchmarks.ClarabelGPU")] = SettingsDict(
+    :direct_kkt_solver      => true,
+    :direct_solve_method    => :cudss,
+
+)
+
 #Clarabel (Rust version )
 SOLVER_CONFIG[:ClarabelRs] = SOLVER_CONFIG[:Clarabel]
 # SOLVER_CONFIG[:ClarabelRs] = SettingsDict(

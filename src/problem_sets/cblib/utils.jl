@@ -26,10 +26,36 @@ function cblib_get_test_names()
     return pairs
 end
 
+function cblib_get_test_names_large()
+
+    # This will return a vector of (group,filename) pairs
+
+    targets_path = joinpath(@__DIR__,"targets/")
+    groups       = readdir(targets_path)
+    groups       = filter(x->!contains(x,"."),groups)
+    pairs = [];
+
+    for group = groups
+        srcpath = joinpath(targets_path,group,"large/")
+
+        #gets the name of the data files in this group
+        files = filter(endswith(".cbf.gz"), readdir(srcpath))
+        append!(pairs, [ (group => splitext(splitext(f)[1])[1]) for f in files])
+    end
+    return pairs
+end
 
 function cblib_load(model, group, test_name)
 
     srcpath = joinpath(@__DIR__,"targets/",group)
+    file = joinpath(srcpath,test_name * ".cbf.gz")
+    println("file = ", file)
+    MathOptInterface.read_from_file(model.moi_backend,file)
+end
+
+function cblib_load_large(model, group, test_name)
+
+    srcpath = joinpath(@__DIR__,"targets/",group,"large/")
     file = joinpath(srcpath,test_name * ".cbf.gz")
     println("file = ", file)
     MathOptInterface.read_from_file(model.moi_backend,file)

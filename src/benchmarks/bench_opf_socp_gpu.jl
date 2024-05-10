@@ -6,12 +6,12 @@ using Clarabel, ECOS, Gurobi, MosekTools
 using ClarabelRs
 using ClarabelBenchmarks.ClarabelGPU
 
-solvers = [Mosek,ClarabelGPU,ECOS,ClarabelRs]
+solvers = [Mosek,ClarabelGPU,ClarabelRs]
 tag     = nothing
-class   = "opf_socp"
+class   = "opf_large_socp"
 verbose = false
-time_limit = 120.
-rerun = false
+time_limit = 3600.
+rerun = true
 plotlist = solvers
 ok_status = ["OPTIMAL"]
 machine = :local 

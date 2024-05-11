@@ -24,6 +24,8 @@ module ClarabelBenchmarks
     include("./problem_sets/mpc/include.jl")
     include("./problem_sets/opf/include.jl")
     include("./problem_sets/hard_socp/include.jl")
+    include("./problem_sets/sdplib/include.jl")
+
 
     #plotting functions 
     include("./performance_profile.jl")

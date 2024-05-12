@@ -16,8 +16,9 @@ SOLVER_CONFIG[:Clarabel] = SettingsDict(
 
 #Clarabel (Rust version )
 SOLVER_CONFIG[:ClarabelRs] = SOLVER_CONFIG[:Clarabel]
-# SOLVER_CONFIG[:ClarabelRs] = SettingsDict(
-# )
+SOLVER_CONFIG[:ClarabelRs] = SettingsDict(
+    :direct_solve_method => :faer,
+)
 
 #Clarabel (128 bit version )
 SOLVER_CONFIG[Symbol("ClarabelBenchmarks.Clarabel128")] = SettingsDict(

@@ -2,6 +2,11 @@ using MultiFloats
 
 module ClarabelBenchmarks
 
+    #Emplty module for GPU tests 
+    module ClarabelGPU
+        
+    end
+
     # main test function and problem def macros live here 
     include("./tools.jl")
 

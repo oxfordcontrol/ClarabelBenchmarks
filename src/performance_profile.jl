@@ -22,6 +22,7 @@ function get_style(solver,tag)
     #cleanup solver strings 
     solver = solver == "Clarabel"   ? "Clarabel (Julia)" : solver
     solver = solver == "ClarabelRs" ? "Clarabel (Rust)"  : solver
+    solver = solver == "ClarabelBenchmarks.ClarabelGPU"   ? "ClarabelGPU" : solver
     if !isnothing(tag) && tag != :nothing
         solver = solver * " : " * string(tag) 
     end    

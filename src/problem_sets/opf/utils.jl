@@ -7,6 +7,10 @@ MAX_POWER_MODEL_NODES["sdp"] = 1800
 MAX_POWER_MODEL_NODES["socp"] = 19000
 MAX_POWER_MODEL_NODES["lp"] = typemax(Int)
 
+#set of large problems
+MIN_POWER_MODEL_NODES = Dict{String,Int}()
+MIN_POWER_MODEL_NODES["socp"] = 2000
+MIN_POWER_MODEL_NODES["lp"] = 20000
 
 function is_number_of_nodes_ok(testname,group)
 
@@ -15,6 +19,16 @@ function is_number_of_nodes_ok(testname,group)
     nodes_str = testname[idx][5:end] #remove "case" prefix 
     nodes     = parse(Int,nodes_str) #convert to int 
     return nodes <= MAX_POWER_MODEL_NODES[group]
+
+end 
+
+function is_large_problem(testname,group)
+
+    r = r"case[0-9]+" #regex to match case number + nodes 
+    idx = findfirst(r,testname)
+    nodes_str = testname[idx][5:end] #remove "case" prefix 
+    nodes     = parse(Int,nodes_str) #convert to int 
+    return nodes > MIN_POWER_MODEL_NODES[group]
 
 end 
 

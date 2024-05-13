@@ -8,7 +8,7 @@ using Tulip
 using HiGHS
 using Hypatia  
 
-solvers = [ClarabelRs,Gurobi,Mosek,Clarabel,ECOS,HiGHS,Hypatia] 
+solvers = [Clarabel, ECOS, Gurobi,Mosek,Clarabel,ECOS,HiGHS,Hypatia]
 class   = "qp"
 verbose = false
 time_limit = 180.

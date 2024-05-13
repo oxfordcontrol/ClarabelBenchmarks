@@ -31,6 +31,10 @@ module ClarabelBenchmarks
     include("./problem_sets/hard_socp/include.jl")
     include("./problem_sets/sdplib/include.jl")
 
+    # Added for CuClarabel
+    include("./problem_sets/entropy_max/include.jl")
+    include("./problem_sets/logreg/include.jl")
+
 
     #plotting functions 
     include("./performance_profile.jl")

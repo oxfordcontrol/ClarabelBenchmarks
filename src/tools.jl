@@ -71,6 +71,7 @@ function run_benchmarks_inner(
     exclude::Vector{Regex} = Regex[],
     include::Union{Nothing,Vector{String},Vector{Regex}} = Regex[],
     time_limit::Float64 = Inf,
+    machine::Symbol
 )
     groups = Dict{String,Dict}()
 
@@ -101,11 +102,11 @@ function run_benchmarks_inner(
         end
 
         #solve and log results
-        groups[classkey][test_name] = solve_with_timeout(time_limit,classkey,test_name,optimizer_factory,settings,verbose)
+        groups[classkey][test_name] = MachineDict[machine](time_limit,classkey,test_name,optimizer_factory,settings,verbose)
 
-	#flush messages - useful when HPC logging
-	flush(Base.stdout)
-	flush(Base.stderr)
+        #flush messages - useful when HPC logging
+        flush(Base.stdout)
+        flush(Base.stderr)
 
     end
 
@@ -163,7 +164,7 @@ function wait_for_task(task, timeout)
     end 
 end 
 
-function solve_with_timeout(time_limit,classkey,test_name,optimizer_factory,settings,verbose)
+function solve_with_timeout_remote(time_limit,classkey,test_name,optimizer_factory,settings,verbose)
 
     if !any_workers() 
         #reinitialize worker
@@ -174,7 +175,7 @@ function solve_with_timeout(time_limit,classkey,test_name,optimizer_factory,sett
 
     #force reload modules and precompile 
     remote_package_reload(Symbol(solver_module(optimizer_factory)))
-    remote_solve_dummies(optimizer_factory)
+    remote_solve_dummies(optimizer_factory,settings)
 
     #solve our actual problem on the remote
     ch  = RemoteChannel(pid)
@@ -198,6 +199,22 @@ function solve_with_timeout(time_limit,classkey,test_name,optimizer_factory,sett
     return solution 
 end
 
+function solve_with_timeout_local(time_limit,classkey,test_name,optimizer_factory,settings,verbose)
+
+    #force reload modules and precompile 
+    remote_package_reload_local(Symbol(solver_module(optimizer_factory)))
+    remote_solve_dummies_local(optimizer_factory,settings)
+
+    solution = remote_solve(time_limit,classkey,test_name,optimizer_factory,settings,verbose)
+
+    return solution 
+end
+
+const MachineDict = Dict(
+    :remote => solve_with_timeout_remote,
+    :local  => solve_with_timeout_local
+)
+
 function solver_module(optimizer_factory)
     return Base.moduleroot(methods(optimizer_factory)[1].module)
 
@@ -214,14 +231,45 @@ function remote_package_reload(optimizer_symbol)
 
 end
 
-function remote_solve_dummies(optimizer_factory)
+function remote_package_reload_local(optimizer_symbol)
+
+    println("calling remote_package_reload with ", optimizer_symbol)
+
+    eval(quote using ClarabelBenchmarks end)
+    eval(quote using JuMP end)
+
+    eval(quote using $optimizer_symbol end)
+
+end
+
+function remote_solve_dummies(optimizer_factory,settings)
 
     println("calling remote_solve_dummies with ", optimizer_factory)
-    expr = quote ClarabelBenchmarks.run_dummy_problems_inner($optimizer_factory) end 
+    expr = quote ClarabelBenchmarks.run_dummy_problems_inner($optimizer_factory,$settings) end 
     eval(quote @everywhere $expr end)
 end
 
-function run_dummy_problems_inner(optimizer_factory)
+function remote_solve_dummies_local(optimizer_factory,settings)
+
+    println("calling remote_solve_dummies with ", optimizer_factory)
+    for test = values(ClarabelBenchmarks.PROBLEMS["dummy"])
+        #try to solve.   If it fails, just move on
+        #since we're just trying to force compilation.
+        #note solvers will fail on these problems if they 
+        #don't support the necessary cone types
+        model = get_typed_model(optimizer_factory)
+        set_silent(model)
+        for (key,val) in settings 
+            set_optimizer_attribute(model, string(key), val)
+        end
+        try 
+            test(model)
+        catch
+        end
+    end
+end
+
+function run_dummy_problems_inner(optimizer_factory,settings)
 
     if myid() == 1
         return
@@ -235,6 +283,9 @@ function run_dummy_problems_inner(optimizer_factory)
         #don't support the necessary cone types
         model = get_typed_model(optimizer_factory)
         set_silent(model)
+        for (key,val) in settings 
+            set_optimizer_attribute(model, string(key), val)
+        end
         try 
             test(model)
         catch
@@ -412,8 +463,7 @@ function get_path_results_tables()
     mkpath(joinpath(get_path_results(),"tables"))
 end
 
-
-function run_benchmark!(package, classkey; exclude = Regex[], time_limit = Inf, verbose = false, tag = nothing, rerun = false)
+function run_benchmark!(package, classkey; exclude = Regex[], time_limit = Inf, verbose = false, tag = nothing, rerun = false, machine = :local)
 
     filename = "bench_" * classkey * "_" * String(Symbol(package)) * ".jld2"
     savefile = joinpath(get_path_results_jld2(),filename)
@@ -456,13 +506,20 @@ function run_benchmark!(package, classkey; exclude = Regex[], time_limit = Inf, 
 
     println("Solving with ", package)
 
-    settings = ClarabelBenchmarks.SOLVER_CONFIG[Symbol(package)]
+    settings = solver_config[Symbol(package)]
+    #Use GPU version of Clarabel
+    if (package === ClarabelBenchmarks.ClarabelGPU)
+        optimizer = Clarabel.Optimizer
+    else
+        optimizer = package.Optimizer
+    end
     result = ClarabelBenchmarks.run_benchmarks_inner(
-        package.Optimizer, classkey; 
+        optimizer, classkey; 
         settings = settings,
         verbose = verbose,
         exclude = exclude,
-        time_limit = time_limit)
+        time_limit = time_limit,
+        machine = machine)
 
     result[!,:tag] .= tag
 
@@ -481,7 +538,7 @@ end
 
 
 function benchmark(packages, classkey; exclude = Regex[], time_limit = Inf, 
-        verbose = false, tag = nothing, rerun = false, plotlist = nothing, ok_status = nothing)
+        verbose = false, tag = nothing, rerun = false, plotlist = nothing, ok_status = nothing, machine = :local, gpu_test = false)
     
     df = DataFrame()
 
@@ -494,49 +551,57 @@ function benchmark(packages, classkey; exclude = Regex[], time_limit = Inf,
                         time_limit = time_limit, 
                         verbose = verbose, 
                         tag = tag,
-                        rerun = rerun)
+                        rerun = rerun,
+                        machine = machine)
 
         allowmissing!(result)
         df = [df;result]
 
     end 
 
+    device = gpu_test ? "gpu_" : ""
     #performance profile 
-    filename = "bench_" * classkey * "_performance.pdf"
+    filename = "bench_" * device * classkey * "_performance.pdf"
     h = performance_profile(df,plotlist = plotlist, ok_status = ok_status)
     plotfile = joinpath(get_path_results_plots(),filename)
     savefig(h,plotfile)
 
     #time profile 
-    filename = "bench_" * classkey * "_time.pdf"
+    filename = "bench_" * device * classkey * "_time.pdf"
     h = time_profile(df,plotlist = plotlist, ok_status = ok_status)
     plotfile = joinpath(get_path_results_plots(),filename)
     savefig(h,plotfile)
 
     #shifted means as a latex table  
-    filename = "bench_" * classkey * "_sgm.tex"
+    filename = "bench_" * device * classkey * "_sgm.tex"
     filename = joinpath(get_path_results_tables(),filename)
     out = shifted_geometric_means(df, plotlist = plotlist, ok_status = ok_status)
-    write_sgm_table_file(filename,out)
+    write_sgm_table_file(filename,out; gpu_test=gpu_test)
 
 
     #tabulated results data 
-    filename = "bench_" * classkey * "_detail_table.tex"
+    filename = "bench_" * device * classkey * "_detail_table.tex"
     filename = joinpath(get_path_results_tables(),filename)
     tables = build_results_tables(df)
-    write_results_tables(tables,filename)
+    write_results_tables(tables,filename; gpu_test=gpu_test)
 
 
     return df
 
 end
 
-function write_sgm_table_file(filename,out)
+function write_sgm_table_file(filename,out; gpu_test = false)
 
 
     table = hcat(out[:,1],out)  #adds extra leading column
     data = out[1:end,2:end]
     headers = ["","",names(out)[2:end]...]  #drops "solvers"
+    for idx in eachindex(headers)
+        if headers[idx] == "ClarabelBenchmarks.ClarabelGPU" && gpu_test
+            headers[idx] = "ClarabelGPU"
+        end
+    end
+
     alignment = [:l,:l,fill(:c,length(headers)-2)...]
 
     #now we have 2 leading columns, with 4 rows.  
@@ -566,7 +631,7 @@ function build_results_tables(df)
 
     println(length(problems), " remaining...")
 
-    solvers = sort(intersect(solvers,["ClarabelRs","ECOS","Mosek"]))
+    solvers = sort(intersect(solvers,["ClarabelBenchmarks.ClarabelGPU","ClarabelRs","ECOS","Mosek"]))
 
     # insert columns for each solver, for iterations, time / iteration / total time
     tables = Dict()
@@ -634,7 +699,7 @@ function build_results_tables(df)
 
 end 
 
-function write_results_tables(tables,filename)
+function write_results_tables(tables,filename;gpu_test=false)
 
 
     #sort by size?
@@ -666,7 +731,11 @@ function write_results_tables(tables,filename)
     print(io, "Problem & vars. & cons. & nnz(A) & nnz(P) ");
     for i = 1:3
         for solver in solvers 
-            print(io," & $solver");
+            if solver == "ClarabelBenchmarks.ClarabelGPU" && gpu_test
+                print(io," & ClarabelGPU");
+            else
+                print(io," & $solver");
+            end
         end 
     end
     print(io, "\\\\[1ex]\n")

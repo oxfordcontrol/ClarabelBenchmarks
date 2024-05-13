@@ -44,7 +44,8 @@ time_limit     = Float64(time_limit)
 
 ClarabelBenchmarks.run_benchmark!(package, classkey; 
                time_limit = time_limit, 
-               verbose = false
+               verbose = false,
+               machine = :remote
 	       )
 
 println("\n\nFinish time : ", Dates.now())

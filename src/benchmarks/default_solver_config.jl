@@ -12,6 +12,14 @@ SOLVER_CONFIG[:Clarabel] = SettingsDict(
     #:iterative_refinement_reltol => 1e-12,
     #:iterative_refinement_abstol => 1e-12,
     #:static_regularization_constant => 1e-9,
+    :max_iter                       => 500,
+)
+
+#Clarabel (Julia version, on GPU)
+SOLVER_CONFIG[Symbol("ClarabelBenchmarks.ClarabelGPU")] = SettingsDict(
+    :direct_kkt_solver      => true,
+    :direct_solve_method    => :cudss,
+    :max_iter               => 500,
 )
 
 #Clarabel (Rust version )

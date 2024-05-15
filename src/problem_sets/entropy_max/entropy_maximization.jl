@@ -23,22 +23,28 @@ function entropy_max_fit(model::GenericModel{T}, m, n) where {T}
 
     rng = Random.MersenneTwister(40701)
 
-    A = sprandn(rng, T, m, n, 0.125) * T(sqrt(n)) # draws from N(0, n)
+    # Generate A from N(0, n)
+    A = sprandn(rng, T, m, n, 0.125) * T(sqrt(n))
+    # Generate nonsparse V from [0, 1]
     v = rand(rng, T, n)
 
     b = A * v / sum(v)
 
     @variable(model, x[1:n])
     @variable(model, t[1:n])
+
     for i in 1:n
         @constraint(model, [x[i], t[i], 1] in MOI.ExponentialCone())
     end
+
     # Simplex constraints
     @constraint(model, x .>= 0)
     @constraint(model, x .<= 1)
     @constraint(model, sum(x) == 1)
+
+    # Ax ≤ b
     @constraint(model, A*x .<= b)
-    
+
     @objective(model, Max, -sum(t))
 end
 

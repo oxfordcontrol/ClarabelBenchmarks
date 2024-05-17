@@ -96,7 +96,6 @@ function performance_profile(df; plotlist = nothing, ok_status = nothing, filter
         end
     end
 
-
     perf_levels = (10.).^(0:0.01:3)
 
     h = plot()
@@ -224,18 +223,15 @@ function shifted_geometric_means(df; plotlist = nothing, ok_status = nothing, ma
 
     k = 1.0
 
+    sort!(df,[:group,:problem])
+    ok_status = isa(ok_status,String) ? [ok_status] : ok_status
+    
     df = deepcopy(df)
     solvers = unique(df.solver)
     sgm_optimal = Float64[]
     sgm_almost = Float64[]
     failrate_optimal = Float64[]
     failrate_almost = Float64[]
-
-    println("Solvers are $solvers 1")
-    println("plotlist is ", plotlist)
-
-    println("type of plotlist ", typeof(plotlist))
-
     
     if(!isnothing(plotlist))
         solvers = filter(x -> x ∈ String.(Symbol.(plotlist)), solvers)
@@ -243,9 +239,7 @@ function shifted_geometric_means(df; plotlist = nothing, ok_status = nothing, ma
 
     solvers = sort(solvers)
 
-    println("Solvers are $solvers 1b")
-
-    if all(["Clarabel","ClarabelRs"] .∈ [solvers])  #assumes we will be first alpha
+    if all(["Clarabel","ClarabelRs"] .∈ [solvers])  #assumes we will be first plots
         solvers = sort(setdiff(solvers, ["Clarabel","ClarabelRs"]))
         println("Solvers are $solvers 1c")
         solvers = [["ClarabelRs","Clarabel"];solvers]
@@ -255,14 +249,11 @@ function shifted_geometric_means(df; plotlist = nothing, ok_status = nothing, ma
         ok_status = ["OPTIMAL"]
     end
     
-
-    println("Solvers are $solvers 2")
-    
     almost_ok_status = ["ALMOST_OPTIMAL"]
-    if("OPTIMAL" ∈ [ok_status])
+    if("OPTIMAL" ∈ ok_status)
         almost_ok_status = ["ALMOST_OPTIMAL","SLOW_PROGRESS","LOCALLY_SOLVED"]
     end
-    if("INFEASIBLE" ∈ [ok_status])
+    if("INFEASIBLE" ∈ ok_status)
         almost_ok_status = ["ALMOST_INFEASIBLE"]
     end
 
@@ -274,13 +265,9 @@ function shifted_geometric_means(df; plotlist = nothing, ok_status = nothing, ma
     problems = unique(df.problem)
     n = length(problems)
 
-    println("Solvers are $solvers 3")
-
-
     for solver in solvers 
 
         println("Solver is ... $solver")
-
         thisdf = df[df.solver .== solver, :]
         @assert n == nrow(thisdf) 
         thisdf[ismissing.(thisdf.solve_time), :].status .= max_time 

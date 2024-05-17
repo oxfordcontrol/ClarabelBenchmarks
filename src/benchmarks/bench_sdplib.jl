@@ -9,7 +9,7 @@ solvers = [Mosek,ClarabelRs]
 tag     = nothing
 class   = "sdplib"
 verbose = false
-time_limit = 300.
+time_limit = 1800.
 rerun = false
 plotlist = solvers
 

@@ -207,6 +207,7 @@ function remote_package_reload(optimizer_symbol)
 
     println("calling remote_package_reload with ", optimizer_symbol)
 
+    eval(quote @everywhere using Pardiso end)
     eval(quote @everywhere using ClarabelBenchmarks end)
     eval(quote @everywhere using JuMP end)
 
@@ -523,7 +524,7 @@ function benchmark(packages, classkey; exclude = Regex[], time_limit = Inf,
     #tabulated results data 
     filename = "bench_" * classkey * "_detail_table.tex"
     filename = joinpath(get_path_results_tables(),filename)
-    tables = build_results_tables(df)
+    tables = build_results_tables(df, ok_status = ok_status)
     write_results_tables(tables,filename)
 
 
@@ -551,11 +552,15 @@ function write_sgm_table_file(filename,out)
 
 end
 
-function build_results_tables(df)
+function build_results_tables(df; ok_status = nothing)
 
     problems = unique(df.problem)
     solvers = unique(df.solver)
     group = unique(df.group)[1]
+
+    if(isnothing(ok_status))
+        ok_status = ["OPTIMAL"]
+    end
 
     #remove problems that are not in the current benchmark set 
     #this will weed out some other results that were disabled
@@ -605,7 +610,7 @@ function build_results_tables(df)
 
         iters      = df[df.problem .== problem .&& df.solver .== solver,:iterations][1]
         total_time = df[df.problem .== problem .&& df.solver .== solver,:solve_time][1]
-        is_ok      = df[df.problem .== problem .&& df.solver .== solver,:status][1] .== "OPTIMAL"
+        is_ok      = df[df.problem .== problem .&& df.solver .== solver,:status][1] ∈ ok_status
 
         if(is_ok)
             

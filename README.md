@@ -11,7 +11,7 @@ model = ClarabelBenchmarks.PROBLEMS["maros"]["AUG2D"](Clarabel.Optimizer)
 println("solve time: ", solve_time(model))
 ```
 
-It is also possible to pass a Julia model object to these functions, e.g. to solve 
+It is also possible to pass a JuMP model object to these functions, e.g. to solve 
 using non-standard settings.   To solve the same problem with a different iteration 
 limit:
 

@@ -1,7 +1,7 @@
 # Portions of this code are modified from Convex.jl,
 # which is available under an MIT license (see LICENSE).
 
-using JuMP, DataFrames, MathOptInterface
+using JuMP, DataFrames
 using MathOptInterface
 using Clarabel
 using Distributed

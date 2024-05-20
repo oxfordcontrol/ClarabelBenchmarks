@@ -44,6 +44,10 @@ function powermodels_get_test_names()
         end
     end
 
+    if length(tests) == 0
+        error("No tests found in pglib-opf.   Did you remember to clone submodules?")
+    end
+
     return tests
 end
 

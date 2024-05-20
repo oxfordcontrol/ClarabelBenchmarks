@@ -1,5 +1,3 @@
-using MultiFloats
-
 module ClarabelBenchmarks
 
     # main test function and problem def macros live here 
@@ -26,20 +24,16 @@ module ClarabelBenchmarks
     include("./problem_sets/hard_socp/include.jl")
     include("./problem_sets/sdplib/include.jl")
 
-
     #plotting functions 
     include("./performance_profile.jl")
 
-    #add some extended precision arithmetic variations for Clarabel 
-    #to will appear to be separate solver types 
-    module Clarabel128
-        using Clarabel, MultiFloats
-        Optimizer = Clarabel.Optimizer{Float64x2}
-    end 
+    #Additional solver configurations can be made to look like 
+    #standalone solvers, e.g. a 128 bit version of Clarabel
+    #commented out but left for future reference
+    # module Clarabel128
+    #     using Clarabel, MultiFloats
+    #     Optimizer = Clarabel.Optimizer{Float64x2}
+    # end 
     
 end 
 
-#provide some MultiFloat methods for irrationals 
-function MultiFloat{T,N}(x::Irrational{S}) where {S,T,N} 
-    MultiFloat{T,N}(BigFloat(x; precision = precision(MultiFloat{T,N})))
-end 

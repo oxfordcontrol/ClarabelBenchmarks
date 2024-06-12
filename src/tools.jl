@@ -203,7 +203,7 @@ function solve_with_timeout_local(time_limit,classkey,test_name,optimizer_factor
 
     #force reload modules and precompile 
     remote_package_reload_local(Symbol(solver_module(optimizer_factory)))
-    remote_solve_dummies_local(optimizer_factory,settings)
+    # remote_solve_dummies_local(optimizer_factory,settings)
 
     solution = remote_solve(time_limit,classkey,test_name,optimizer_factory,settings,verbose)
 
@@ -233,7 +233,7 @@ end
 
 function remote_package_reload_local(optimizer_symbol)
 
-    println("calling remote_package_reload with ", optimizer_symbol)
+    println("calling remote_package_reload_local with ", optimizer_symbol)
 
     eval(quote using ClarabelBenchmarks end)
     eval(quote using JuMP end)
@@ -510,6 +510,8 @@ function run_benchmark!(package, classkey; exclude = Regex[], time_limit = Inf, 
     #Use GPU version of Clarabel
     if (package === ClarabelBenchmarks.ClarabelGPU)
         optimizer = Clarabel.Optimizer
+    elseif (package === ClarabelBenchmarks.MosekWithPresolve)
+        optimizer = Mosek.Optimizer
     else
         optimizer = package.Optimizer
     end
@@ -599,6 +601,8 @@ function write_sgm_table_file(filename,out; gpu_test = false)
     for idx in eachindex(headers)
         if headers[idx] == "ClarabelBenchmarks.ClarabelGPU" && gpu_test
             headers[idx] = "ClarabelGPU"
+        elseif headers[idx] == "ClarabelBenchmarks.MosekWithPresolve" && gpu_test
+            headers[idx] = "Mosek*"
         end
     end
 
@@ -631,7 +635,7 @@ function build_results_tables(df)
 
     println(length(problems), " remaining...")
 
-    solvers = sort(intersect(solvers,["ClarabelBenchmarks.ClarabelGPU","ClarabelRs","ECOS","Mosek"]))
+    solvers = sort(intersect(solvers,["ClarabelBenchmarks.ClarabelGPU","ClarabelRs","ECOS","Mosek","ClarabelBenchmarks.MosekWithPresolve"]))
 
     # insert columns for each solver, for iterations, time / iteration / total time
     tables = Dict()
@@ -733,6 +737,8 @@ function write_results_tables(tables,filename;gpu_test=false)
         for solver in solvers 
             if solver == "ClarabelBenchmarks.ClarabelGPU" && gpu_test
                 print(io," & ClarabelGPU");
+            elseif solver == "ClarabelBenchmarks.MosekWithPresolve" && gpu_test
+                print(io," & Mosek*");
             else
                 print(io," & $solver");
             end

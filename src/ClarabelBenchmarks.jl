@@ -6,6 +6,9 @@ module ClarabelBenchmarks
     module ClarabelGPU
         
     end
+    module MosekWithPresolve
+        
+    end
 
     # main test function and problem def macros live here 
     include("./tools.jl")
@@ -30,11 +33,8 @@ module ClarabelBenchmarks
     include("./problem_sets/opf/include.jl")
     include("./problem_sets/hard_socp/include.jl")
     include("./problem_sets/sdplib/include.jl")
-
-    # Added for CuClarabel
-    include("./problem_sets/entropy_max/include.jl")
-    include("./problem_sets/logreg/include.jl")
-
+    include("./problem_sets/exp/include.jl")
+    include("./problem_sets/mittelmann/include.jl")
 
     #plotting functions 
     include("./performance_profile.jl")

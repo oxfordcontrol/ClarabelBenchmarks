@@ -43,6 +43,19 @@ for n in [100, 1000, 5000]
     end
 end
 
+for n in [5000, 10000, 15000, 20000, 25000]
 
+    group_name = "large_qp"
+    test_name  = "portfolio_optimization_n_" * string(n)
+    fcn_name   = Symbol(group_name * "_" * test_name )
+
+    @eval begin
+        @add_problem $group_name $test_name function $fcn_name(
+            model; kwargs...
+        )
+            return solve_generic(portfolio_optimization,model,$n; kwargs...)
+        end
+    end
+end
 
 

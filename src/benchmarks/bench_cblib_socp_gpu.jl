@@ -4,14 +4,14 @@
 using ClarabelBenchmarks, DataFrames, JLD2
 using Clarabel, ECOS, Gurobi, MosekTools
 using ClarabelRs
-using ClarabelBenchmarks.ClarabelGPU
+using ClarabelBenchmarks.ClarabelGPU,ClarabelBenchmarks.MosekWithPresolve
 
-solvers = [ClarabelGPU,Mosek,ClarabelRs]
+solvers = [ClarabelRs,ClarabelGPU,MosekWithPresolve,Mosek]
 tag     = nothing
 class   = "cblib_large_socp"
-verbose = false
-time_limit = 3600.
-rerun = false
+verbose = true
+time_limit = 1000.
+rerun = true
 plotlist = solvers
 machine = :local 
 gpu_test = true

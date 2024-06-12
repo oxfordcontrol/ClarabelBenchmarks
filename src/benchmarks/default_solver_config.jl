@@ -20,12 +20,22 @@ SOLVER_CONFIG[Symbol("ClarabelBenchmarks.ClarabelGPU")] = SettingsDict(
     :direct_kkt_solver      => true,
     :direct_solve_method    => :cudss,
     :max_iter               => 500,
+    :tol_gap_abs            => 1e-6,
+    :tol_gap_rel         => 1e-6,
+    :tol_feas            => 1e-6,
+    :tol_ktratio         => 1e-4,
 )
 
 #Clarabel (Rust version )
 SOLVER_CONFIG[:ClarabelRs] = SOLVER_CONFIG[:Clarabel]
 SOLVER_CONFIG[:ClarabelRs] = SettingsDict(
+    :direct_kkt_solver      => true,
     :direct_solve_method => :faer,
+    :max_iter               => 500,
+    :tol_gap_abs            => 1e-6,
+    :tol_gap_rel         => 1e-6,
+    :tol_feas            => 1e-6,
+    :tol_ktratio         => 1e-4,
 )
 
 #Clarabel (128 bit version )
@@ -39,7 +49,19 @@ SOLVER_CONFIG[:ECOS] = SettingsDict(
 
 #MOSEK
 SOLVER_CONFIG[:Mosek] = SettingsDict(
-    :MSK_IPAR_PRESOLVE_USE => 0
+    :MSK_IPAR_PRESOLVE_USE => 0,
+    :MSK_DPAR_INTPNT_CO_TOL_DFEAS => 1e-6,
+    :MSK_DPAR_INTPNT_CO_TOL_MU_RED => 1e-6,
+    :MSK_DPAR_INTPNT_CO_TOL_PFEAS => 1e-6,
+    :MSK_DPAR_INTPNT_CO_TOL_REL_GAP => 1e-6,
+)
+
+#MOSEK no presolve
+SOLVER_CONFIG[Symbol("ClarabelBenchmarks.MosekWithPresolve")] = SettingsDict(
+    :MSK_DPAR_INTPNT_CO_TOL_DFEAS => 1e-6,
+    :MSK_DPAR_INTPNT_CO_TOL_MU_RED => 1e-6,
+    :MSK_DPAR_INTPNT_CO_TOL_PFEAS => 1e-6,
+    :MSK_DPAR_INTPNT_CO_TOL_REL_GAP => 1e-6,
 )
 
 #Gurobi 

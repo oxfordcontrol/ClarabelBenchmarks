@@ -46,6 +46,20 @@ for n in [10, 100, 500, 1000]
     end
 end
 
+for n in [5000, 10000, 15000, 20000, 25000]
+
+    group_name = "large_qp"
+    test_name  = "huber_fitting_n_" * string(n)
+    fcn_name   = Symbol(group_name * "_" * test_name )
+
+    @eval begin
+        @add_problem $group_name $test_name function $fcn_name(
+            model; kwargs...
+        )
+            return solve_generic(huber_fitting,model,$n; kwargs...)
+        end
+    end
+end
 
 
 

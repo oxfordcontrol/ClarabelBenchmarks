@@ -3,7 +3,7 @@ using Plots, JLD2,DataFrames, ColorSchemes, StatsBase
 function get_style(solver,tag)
 
     cs = ColorSchemes.tab10
-    solvers = ["Clarabel","Mosek","Gurobi","ClarabelRs","ECOS","Hypatia","HiGHS","OSQP","SCS","Tulip"]
+    solvers = ["ClarabelBenchmarks.ClarabelGPU","ClarabelBenchmarks.MosekWithPresolve","Clarabel","Mosek","Gurobi","ClarabelRs","ECOS","Hypatia","HiGHS","OSQP","SCS","Tulip"]
 
     # get the color for the solver in the order above
     idx = findfirst(solver .== solvers) 
@@ -23,6 +23,7 @@ function get_style(solver,tag)
     solver = solver == "Clarabel"   ? "Clarabel (Julia)" : solver
     solver = solver == "ClarabelRs" ? "Clarabel (Rust)"  : solver
     solver = solver == "ClarabelBenchmarks.ClarabelGPU"   ? "ClarabelGPU" : solver
+    solver = solver == "ClarabelBenchmarks.MosekWithPresolve"   ? "Mosek*" : solver
     if !isnothing(tag) && tag != :nothing
         solver = solver * " : " * string(tag) 
     end    

@@ -635,7 +635,7 @@ function build_results_tables(df)
 
     println(length(problems), " remaining...")
 
-    solvers = sort(intersect(solvers,["ClarabelBenchmarks.ClarabelGPU","ClarabelRs","ECOS","Mosek","ClarabelBenchmarks.MosekWithPresolve"]))
+    solvers = sort(intersect(solvers,["ClarabelBenchmarks.ClarabelGPU","ClarabelRs","ECOS","Mosek","Gurobi","ClarabelBenchmarks.MosekWithPresolve"]))
 
     # insert columns for each solver, for iterations, time / iteration / total time
     tables = Dict()

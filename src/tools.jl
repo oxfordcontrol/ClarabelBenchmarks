@@ -101,13 +101,6 @@ function run_benchmarks_inner(
             println("Solving : ", test_name, " [", i, "/", ntests, "]")
         end
 
-        #fix bug with Gurobi where it fails due to licensing checkout 
-        #problems unless the environment variable is set.
-        if optimizer_factory == Gurobi.Optimizer
-            env = Gurobi.Env()
-            optimizer_factory = JuMP.Model(() -> Gurobi.Optimizer(env))
-        end
-
         #solve and log results
         groups[classkey][test_name] = solve_with_timeout(time_limit,classkey,test_name,optimizer_factory,settings,verbose)
 
@@ -291,6 +284,12 @@ function get_typed_model(optimizer_factory)
     # Some care is required though because Mosek.Optimizer is a function called "Optimizer", 
     # instead of a subtype of AbstractOptimizer.  The equivalent Mosek subtype is 
     # MosekTools.Optimizer, which probably should have been used everywhere instead.  
+
+    # this fixes a problem where Gurobi thinks it as checked out the same 
+    # license multiple times 
+    if optimizer_factory == Gurobi.Optimizer
+        return JuMP.Model(() -> Gurobi.Optimizer(Gurobi.Env()))
+    end
 
     if !isa(optimizer_factory,Function)
         if optimizer_factory <: Clarabel.Optimizer 

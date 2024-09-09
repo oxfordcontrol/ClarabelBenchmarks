@@ -100,6 +100,13 @@ function run_benchmarks_inner(
             println("Solving : ", test_name, " [", i, "/", ntests, "]")
         end
 
+        #fix bug with Gurobi where it fails due to licensing checkout 
+        #problems unless the environment variable is set.
+        if optimizer_factory == Gurobi.Optimizer
+            env = Gurobi.Env()
+            optimizer_factory = JuMP.Model(() -> Gurobi.Optimizer(env))
+        end
+
         #solve and log results
         groups[classkey][test_name] = solve_with_timeout(time_limit,classkey,test_name,optimizer_factory,settings,verbose)
 

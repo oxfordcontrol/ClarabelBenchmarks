@@ -1,6 +1,6 @@
 name = "ClarabelBenchmarks"
 uuid = "086be79b-982c-4ee0-9f3a-5052a7be4b8e"
-version = "0.1.0"
+version = "0.9"
 
 [deps]
 Clarabel = "61c947e1-3e6d-4ee4-985a-eec8c727bd6e"

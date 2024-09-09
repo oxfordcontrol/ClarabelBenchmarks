@@ -1,7 +1,7 @@
 # Portions of this code are modified from Convex.jl,
 # which is available under an MIT license (see LICENSE).
 
-using JuMP, DataFrames, MathOptInterface
+using JuMP, DataFrames, MathOptInterface, Gurobi
 using MathOptInterface
 using Clarabel
 using Distributed
@@ -99,6 +99,13 @@ function run_benchmarks_inner(
             println("\n\nSolving : ", test_name," [", i, "/", ntests, "]","\n")
         else
             println("Solving : ", test_name, " [", i, "/", ntests, "]")
+        end
+
+        #fix bug with Gurobi where it fails due to licensing checkout 
+        #problems unless the environment variable is set.
+        if optimizer_factory == Gurobi.Optimizer
+            env = Gurobi.Env()
+            optimizer_factory = JuMP.Model(() -> Gurobi.Optimizer(env))
         end
 
         #solve and log results

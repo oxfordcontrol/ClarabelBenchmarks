@@ -11,14 +11,15 @@ function portfolio_optimization(model::GenericModel{T}, n, γ = one(T)) where{T}
     k = ceil(Int,0.1 * n)
     density = T(0.5)
 
-    F = sprandn(rng, T, n, k, density)
+    F = sprandn(rng, T, k,n, density)
     d = rand(rng,n).*sqrt(k) 
     D = sparse(Diagonal(d))
     μ = randn(rng,T, n)
 
     @variable(model, x[1:n])
     @variable(model, y[1:k])
-    @constraint(model, y .== F'*x)
+    yy = F*x;
+    @constraint(model, y == yy)
     @constraint(model, sum(x) == one(T))
     @constraint(model, x .>= 0)
     @objective(model, Min, x'*D*x + y'*y - 1/(2γ) * (μ'*x))

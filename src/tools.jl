@@ -6,6 +6,7 @@ using MathOptInterface
 using Clarabel
 using Distributed
 using PrettyTables, Printf
+using Gurobi
 
 const MOI = MathOptInterface
 

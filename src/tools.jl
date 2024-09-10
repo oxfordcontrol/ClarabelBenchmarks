@@ -208,7 +208,7 @@ function remote_package_reload(optimizer_symbol)
 
     println("calling remote_package_reload with ", optimizer_symbol)
 
-    eval(quote @everywhere using Pardiso end)
+    # eval(quote @everywhere using Pardiso end)
     eval(quote @everywhere using ClarabelBenchmarks end)
     eval(quote @everywhere using JuMP end)
 

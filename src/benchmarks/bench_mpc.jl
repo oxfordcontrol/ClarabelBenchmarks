@@ -10,7 +10,7 @@ solvers = [Clarabel,Mosek,ClarabelRs,ECOS,Gurobi,HiGHS]
 tag     = nothing
 class   = "mpc"
 verbose = false
-time_limit = 10.
+time_limit = 120.
 rerun = false
 plotlist = [Clarabel,Mosek,ClarabelRs,ECOS,Gurobi,HiGHS]
 

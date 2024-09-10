@@ -289,7 +289,6 @@ function get_typed_model(optimizer_factory)
     # license multiple times 
 
     if optimizer_factory == Gurobi.Optimizer
-            return JuMP.Model(() -> Gurobi.Optimizer(Gurobi.Env()))
             println("GUROBI_ENV is ", GRB_ENV_REF[])
             return JuMP.Model(() -> Gurobi.Optimizer(GRB_ENV_REF[]))
     end

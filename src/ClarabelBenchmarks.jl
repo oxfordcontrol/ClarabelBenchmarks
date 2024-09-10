@@ -31,13 +31,13 @@ module ClarabelBenchmarks
 
     #Global Gurobi license reference to support test on 
     #machines with a fixed number of licenses 
-    +const GRB_ENV_REF = Ref{Gurobi.Env}()
-+
-+    function __init__()
-+        global GRB_ENV_REF
-+        GRB_ENV_REF[] = Gurobi.Env()
-+        return
-+    end
+    const GRB_ENV_REF = Ref{Gurobi.Env}()
+
+    function __init__()
+        global GRB_ENV_REF
+        GRB_ENV_REF[] = Gurobi.Env()
+        return
+    end
 
     #Additional solver configurations can be made to look like 
     #standalone solvers, e.g. a 128 bit version of Clarabel

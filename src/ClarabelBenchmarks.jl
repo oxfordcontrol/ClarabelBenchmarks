@@ -5,7 +5,7 @@ module ClarabelBenchmarks
     include("./tools.jl")
 
     #benchmark standard settings for each solver type
-    include("./benchmarks/default_solver_config.jl")
+    include("./benchmarks/solver_config.jl")
 
     #fake problems for compiler warmup 
     include("./problem_sets/dummy/dummy.jl")

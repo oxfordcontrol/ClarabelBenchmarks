@@ -20,4 +20,4 @@ df = ClarabelBenchmarks.benchmark(
     verbose = verbose, 
     tag = tag, 
     rerun = rerun,
-    plotlist=plotlist)
+    plotlist = plotlist)

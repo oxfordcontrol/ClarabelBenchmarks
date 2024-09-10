@@ -1,3 +1,4 @@
+using Gurobi
 module ClarabelBenchmarks
 
     # main test function and problem def macros live here 

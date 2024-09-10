@@ -10,7 +10,7 @@ solvers = [Clarabel,Mosek,ClarabelRs,ECOS,Gurobi,HiGHS]
 tag     = nothing
 class   = "maros"
 verbose = false
-time_limit = 120.
+time_limit = 300.
 rerun = false
 plotlist = [Clarabel,Mosek,ClarabelRs,ECOS,Gurobi,HiGHS]
 
@@ -18,6 +18,7 @@ plotlist = [Clarabel,Mosek,ClarabelRs,ECOS,Gurobi,HiGHS]
 df = ClarabelBenchmarks.benchmark(
     solvers, class;
     time_limit = time_limit,
-    verbose = verbose, tag = tag, rerun = rerun,
-    plotlist = plotlist,
-    )
+    verbose = verbose, 
+    tag = tag, 
+    rerun = rerun,
+    plotlist=plotlist)

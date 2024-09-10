@@ -1,4 +1,4 @@
-# Run benchmarks on Maros-Meszaros problems
+# Run benchmarks on optimal control problems
 
 # include any solvers you want to test 
 using ClarabelBenchmarks, DataFrames, JLD2
@@ -10,7 +10,7 @@ solvers = [Clarabel,Mosek,ClarabelRs,ECOS,Gurobi,HiGHS]
 tag     = nothing
 class   = "mpc"
 verbose = false
-time_limit = 120.
+time_limit = 300.
 rerun = false
 plotlist = [Clarabel,Mosek,ClarabelRs,ECOS,Gurobi,HiGHS]
 

@@ -1,4 +1,4 @@
-# Run benchmarks on our own SOCP benchmarks
+# Run benchmarks on Suite-sparse least squares benchmarks
 
 # include any solvers you want to test 
 using ClarabelBenchmarks, DataFrames, JLD2
@@ -6,13 +6,13 @@ using Clarabel, ECOS, HiGHS
 using Gurobi, MosekTools
 using ClarabelRs
 
-solvers = [Clarabel,ClarabelRs,Mosek,ECOS,Gurobi,HiGHS]
+solvers = [Clarabel,Mosek,ClarabelRs,ECOS,Gurobi,HiGHS]
+tag     = nothing
 class   = "sslsq"
 verbose = false
-time_limit = 120.
-tag     = nothing
-rerun   = false
-plotlist = [Clarabel,ClarabelRs,Mosek,ECOS,Gurobi,HiGHS]
+time_limit = 300.
+rerun = false
+plotlist = [Clarabel,Mosek,ClarabelRs,ECOS,Gurobi,HiGHS]
 
 
 df = ClarabelBenchmarks.benchmark(

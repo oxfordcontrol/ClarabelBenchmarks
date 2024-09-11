@@ -1,0 +1,67 @@
+\documentclass[11pt,a4paper]{article}
+\input{preamble.tex}
+
+
+\begin{document}
+
+
+\section{Numerical Experiments}
+
+\subsection{Benchmark problems with quadratic objectives}
+
+    \subsubsection{The Maros-Meszaros test set}
+    \BenchmarkResults{!h}{maros}{Maros-Meszaros}
+
+    \subsubsection{Least-squares problems with SuiteSparse matrices}
+    \BenchmarkResults{!h}{sslsq}{SuiteSparse least-squares}
+
+    \pagebreak
+    \subsubsection{Constrained optimal control}
+    \BenchmarkResults{!h}{mpc}{optimal control}
+
+
+\pagebreak
+\subsection{Benchmark problems with linear objectives}
+
+    \subsubsection{NETLIB LP problems}
+    \BenchmarkResults{!h}{netlib_feasible}{NETLIB Feasible LP}
+    \BenchmarkResults{!h}{netlib_infeasible}{NETLIB Infeasible LP}
+
+    \pagebreak
+    \subsubsection{CBLIB exponential cone problems}
+    \BenchmarkResults{!h}{cblib_exp}{CBLIB Exponential Cone}
+
+    \pagebreak
+    \subsubsection{Optimal power flow}
+    \BenchmarkResults{!h}{opf_lp}{LP Optimal Power Flow}
+    \BenchmarkResults{!h}{opf_socp}{SOCP Optimal Power Flow}
+
+
+\pagebreak
+\subsection{Semidefinite program benchmarks}
+    \BenchmarkResults{!h}{sdplib}{SDPLIB Semidefinite Programming}
+
+
+\pagebreak
+\appendix
+\section{Detailed benchmark results}
+
+\BenchmarkDetailTable{maros}{Maros-Meszaros}
+\BenchmarkDetailTable{mpc}{Optimal Control}
+\BenchmarkDetailTable{sslsq}{SuiteSparse least-squares}
+\BenchmarkDetailTable{netlib_feasible}{NETLIB Feasible LP}
+\BenchmarkDetailTable{netlib_infeasible}{NETLIB Infeasible LP}
+\BenchmarkDetailTable{opf_lp}{LP Optimal Power Flow}
+\BenchmarkDetailTable{opf_socp}{SOCP Optimal Power Flow}
+\BenchmarkDetailTable{cblib_exp}{CBLIB Exponential Cone}
+\BenchmarkDetailTable{cblib_socp}{CBLIB Second-Order Cone}
+%
+% PJG: for the SDP problems, I ran the benchmarks for ClarabelRs both with 
+% and without chordal decomposition.   Data for the non-chordal version
+% was then saved in the "ECOS" slot, because ECOS doesn't handle SDPs and 
+% it was easier than rewriting all of the plotting and tabulation code.
+% The source file for this table must be manually edited to reflect this! 
+\BenchmarkDetailTable{sdplib}{SDPLIB Semidefinite Programming}
+
+
+\end{document}

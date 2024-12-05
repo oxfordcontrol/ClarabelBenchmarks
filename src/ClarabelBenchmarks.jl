@@ -27,13 +27,13 @@ module ClarabelBenchmarks
     #plotting functions 
     include("./performance_profile.jl")
 
-    #Additional solver configurations can be made to look like 
-    #standalone solvers, e.g. a 128 bit version of Clarabel
-    #commented out but left for future reference
-    # module Clarabel128
-    #     using Clarabel, MultiFloats
-    #     Optimizer = Clarabel.Optimizer{Float64x2}
-    # end 
+    # Additional solver configurations can be made to look like 
+    # standalone solvers, e.g. a 128 bit version of Clarabel
+    # commented out but left for future reference
+    module Clarabel128
+        using Clarabel, MultiFloats
+        Optimizer = Clarabel.Optimizer{Float64x2}
+    end 
     
 end 
 

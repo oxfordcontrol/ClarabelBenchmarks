@@ -6,6 +6,7 @@ using MathOptInterface
 using Clarabel
 using Distributed
 using PrettyTables, Printf
+using Gurobi
 
 const MOI = MathOptInterface
 
@@ -207,7 +208,7 @@ function remote_package_reload(optimizer_symbol)
 
     println("calling remote_package_reload with ", optimizer_symbol)
 
-    eval(quote @everywhere using Pardiso end)
+    # eval(quote @everywhere using Pardiso end)
     eval(quote @everywhere using ClarabelBenchmarks end)
     eval(quote @everywhere using JuMP end)
 
@@ -282,7 +283,15 @@ function get_typed_model(optimizer_factory)
     # which in turn require direct use of JuMP GenericModels.   Handle this case separately 
     # Some care is required though because Mosek.Optimizer is a function called "Optimizer", 
     # instead of a subtype of AbstractOptimizer.  The equivalent Mosek subtype is 
-    # MosekTools.Optimizer, which probably should have been used everywhere instead.  
+    # MosekTools.Optimizer, which probably should have been used everywhere instead. 
+    
+    # this fixes a problem where Gurobi thinks it as checked out the same 
+    # license multiple times 
+
+    if optimizer_factory == Gurobi.Optimizer
+            println("GUROBI_ENV is ", GRB_ENV_REF[])
+            return JuMP.Model(() -> Gurobi.Optimizer(GRB_ENV_REF[]))
+    end
 
     if !isa(optimizer_factory,Function)
         if optimizer_factory <: Clarabel.Optimizer 

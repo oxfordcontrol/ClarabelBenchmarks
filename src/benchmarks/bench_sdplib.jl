@@ -16,5 +16,7 @@ plotlist = solvers
 df = ClarabelBenchmarks.benchmark(
     solvers, class;
     time_limit = time_limit,
-    verbose = verbose, tag = tag, rerun = rerun,
+    verbose = verbose, 
+    tag = tag, 
+    rerun = rerun,
     plotlist = plotlist)

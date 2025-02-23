@@ -1,4 +1,3 @@
-using Gurobi
 module ClarabelBenchmarks
 
     # main test function and problem def macros live here 
@@ -39,13 +38,27 @@ module ClarabelBenchmarks
         return
     end
 
-    #Additional solver configurations can be made to look like 
+    #Additional solver configurations can be made to look like
     #standalone solvers, e.g. a 128 bit version of Clarabel
     #commented out but left for future reference
     # module Clarabel128
     #     using Clarabel, MultiFloats
     #     Optimizer = Clarabel.Optimizer{Float64x2}
-    # end 
-    
-end 
+    # end
 
+    #identical solver with different name.   Useful
+    #for benchmarking if configured with use_quad_obj = false
+    module ClarabelHSDE
+        using Clarabel
+        Optimizer = Clarabel.Optimizer
+    end
+    export ClarabelHSDE
+
+    #identical solver with different name.   Useful
+    #for benchmarking if configured with use_quad_obj = false
+    module ClarabelRsHSDE
+        using ClarabelRs
+        Optimizer = ClarabelRs.Optimizer
+    end
+    export ClarabelRsHSDE
+end

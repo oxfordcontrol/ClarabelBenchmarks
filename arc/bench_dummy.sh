@@ -16,6 +16,10 @@ export BENCHMARK_SLURM_TIME_LIMIT=00:10:00
 export BENCHMARK_SOLVER_ARRAY="\
 $MODULE_Clarabel,\
 $MODULE_ClarabelRs,\
+$MODULE_Gurobi,\
+$MODULE_Mosek,\
+$MODULE_ClarabelHSDE,\
+$MODULE_ClarabelRsHSDE,\
 "
 
 #makes a slurm configuration file and calls sbatch

@@ -9,12 +9,20 @@ SOLVER_CONFIG = Dict{Symbol,SettingsDict}()
 
 #Clarabel (Julia version )
 SOLVER_CONFIG[:Clarabel] = SettingsDict(
+    :max_threads => 1,
+    :direct_solve_method => :auto,
 )
 
 #Clarabel (Rust version )
 SOLVER_CONFIG[:ClarabelRs] = SOLVER_CONFIG[:Clarabel]
-SOLVER_CONFIG[:ClarabelRs] = SettingsDict(
-)
+
+#Clarabel (Julia version, no quadratics )
+SOLVER_CONFIG[Symbol("ClarabelBenchmarks.ClarabelHSDE")] = deepcopy(SOLVER_CONFIG[:Clarabel])
+SOLVER_CONFIG[Symbol("ClarabelBenchmarks.ClarabelHSDE")][:use_quad_obj] = false
+
+#Clarabel (Rust version, no quadratics )
+SOLVER_CONFIG[Symbol("ClarabelBenchmarks.ClarabelRsHSDE")] = deepcopy(SOLVER_CONFIG[:ClarabelRs])
+SOLVER_CONFIG[Symbol("ClarabelBenchmarks.ClarabelRsHSDE")][:use_quad_obj] = false
 
 #Clarabel (128 bit version )
 SOLVER_CONFIG[Symbol("ClarabelBenchmarks.Clarabel128")] = SettingsDict(
@@ -27,12 +35,14 @@ SOLVER_CONFIG[:ECOS] = SettingsDict(
 
 #MOSEK
 SOLVER_CONFIG[:Mosek] = SettingsDict(
-    :MSK_IPAR_PRESOLVE_USE => 0
+    :MSK_IPAR_PRESOLVE_USE => 0,
+    :MSK_IPAR_NUM_THREADS => 1,
 )
 
 #Gurobi 
 SOLVER_CONFIG[:Gurobi] = SettingsDict(
     :presolve => false,
+    :Threads => 1
 )
 
 #OSQP
@@ -47,7 +57,8 @@ SOLVER_CONFIG[:SCS] = SettingsDict(
 
 #HiGHS
 SOLVER_CONFIG[:HiGHS] = SettingsDict(
-    :presolve => "off"
+    :presolve => "off",
+    :threads => 1,
 )
 
 #Hypatia

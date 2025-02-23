@@ -20,6 +20,7 @@ $MODULE_Mosek,\
 $MODULE_ECOS,\
 $MODULE_SCS,\
 $MODULE_Hypatia,\
+$MoDULE_Gurobi,\
 "
 
 #makes a slurm configuration file and calls sbatch

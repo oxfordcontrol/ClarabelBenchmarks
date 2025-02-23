@@ -9,7 +9,7 @@ using ClarabelRs
 solvers = [Clarabel,Mosek,ClarabelRs,ECOS,Gurobi,HiGHS]
 tag     = nothing
 class   = "maros"
-verbose = false
+verbose = true
 time_limit = 300.
 rerun = false
 plotlist = [Clarabel,Mosek,ClarabelRs,ECOS,Gurobi,HiGHS]

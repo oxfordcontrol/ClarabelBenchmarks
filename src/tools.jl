@@ -175,7 +175,7 @@ function solve_with_timeout(time_limit,classkey,test_name,optimizer_factory,sett
 
     #force reload modules and precompile 
     remote_package_reload(Symbol(solver_module(optimizer_factory)))
-    remote_solve_dummies(optimizer_factory)
+    remote_solve_dummies(optimizer_factory,settings)
 
     #solve our actual problem on the remote
     ch  = RemoteChannel(pid)
@@ -216,14 +216,14 @@ function remote_package_reload(optimizer_symbol)
 
 end
 
-function remote_solve_dummies(optimizer_factory)
+function remote_solve_dummies(optimizer_factory,settings)
 
     println("calling remote_solve_dummies with ", optimizer_factory)
-    expr = quote ClarabelBenchmarks.run_dummy_problems_inner($optimizer_factory) end 
+    expr = quote ClarabelBenchmarks.run_dummy_problems_inner($optimizer_factory, $settings) end 
     eval(quote @everywhere $expr end)
 end
 
-function run_dummy_problems_inner(optimizer_factory)
+function run_dummy_problems_inner(optimizer_factory, settings)
 
     if myid() == 1
         return
@@ -235,14 +235,24 @@ function run_dummy_problems_inner(optimizer_factory)
         #since we're just trying to force compilation.
         #note solvers will fail on these problems if they 
         #don't support the necessary cone types
-        model = get_typed_model(optimizer_factory)
+
+	model = get_typed_model(optimizer_factory)
         set_silent(model)
+	remote_apply_settings(model,settings)
+
         try 
             test(model)
         catch
         end
     end
-end 
+end
+
+function remote_apply_settings(model,settings)
+
+    for (key,val) in settings
+        set_optimizer_attribute(model, string(key), val)
+    end
+end
 
 function remote_solve(time_limit,classkey,test_name,optimizer_factory,settings,verbose)
 
@@ -256,10 +266,8 @@ function remote_solve(time_limit,classkey,test_name,optimizer_factory,settings,v
         unset_silent(model); 
     end
     
-    for (key,val) in settings 
-        set_optimizer_attribute(model, string(key), val)
-    end
-    
+    remote_apply_settings(model,settings)
+
     #not all solver support setting time limits. Looking at you, ECOS.
     try
         set_time_limit_sec(model, time_limit)

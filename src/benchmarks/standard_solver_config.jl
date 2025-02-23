@@ -16,6 +16,14 @@ SOLVER_CONFIG[:ClarabelRs] = SOLVER_CONFIG[:Clarabel]
 SOLVER_CONFIG[:ClarabelRs] = SettingsDict(
 )
 
+#Clarabel (Julia version, no quadratics )
+SOLVER_CONFIG[Symbol("ClarabelBenchmarks.ClarabelHSDE")] = deepcopy(SOLVER_CONFIG[:Clarabel])
+SOLVER_CONFIG[Symbol("ClarabelBenchmarks.ClarabeHSDE")][:use_quad_obj] = false
+
+#Clarabel (Rust version, no quadratics )
+SOLVER_CONFIG[Symbol("ClarabelBenchmarks.ClarabelRsHSDE")] = deepcopy(SOLVER_CONFIG[:ClarabelRs])
+SOLVER_CONFIG[Symbol("ClarabelBenchmarks.ClarabelRsHSDE")][:use_quad_obj] = false
+
 #Clarabel (128 bit version )
 SOLVER_CONFIG[Symbol("ClarabelBenchmarks.Clarabel128")] = SettingsDict(
     :max_iter => 500,	

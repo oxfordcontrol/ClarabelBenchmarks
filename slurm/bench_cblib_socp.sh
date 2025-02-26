@@ -17,6 +17,7 @@ export BENCHMARK_SOLVER_ARRAY="\
 $MODULE_Clarabel,\
 $MODULE_ClarabelRs,\
 $MODULE_Mosek,\
+$MODULE_Gurobi,\
 $MODULE_ECOS,\
 $MODULE_SCS,\
 $MODULE_Hypatia,\

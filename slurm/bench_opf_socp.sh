@@ -20,8 +20,8 @@ export BENCHMARK_SOLVER_ARRAY="\
 $MODULE_Clarabel,\
 $MODULE_ClarabelRs,\
 $MODULE_Mosek,\
-$MODULE_ECOS,\
 $MODULE_Gurobi,\
+$MODULE_ECOS,\
 "
 
 #makes a slurm configuration file and calls sbatch

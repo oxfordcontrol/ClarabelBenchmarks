@@ -1,5 +1,3 @@
-using MultiFloats
-
 module ClarabelBenchmarks
 
     #Emplty module for GPU tests 
@@ -14,7 +12,7 @@ module ClarabelBenchmarks
     include("./tools.jl")
 
     #benchmark standard settings for each solver type
-    include("./benchmarks/default_solver_config.jl")
+    include("./benchmarks/solver_config.jl")
 
     #fake problems for compiler warmup 
     include("./problem_sets/dummy/dummy.jl")
@@ -39,16 +37,38 @@ module ClarabelBenchmarks
     #plotting functions 
     include("./performance_profile.jl")
 
-    #add some extended precision arithmetic variations for Clarabel 
-    #to will appear to be separate solver types 
-    module Clarabel128
-        using Clarabel, MultiFloats
-        Optimizer = Clarabel.Optimizer{Float64x2}
-    end 
-    
-end 
 
-#provide some MultiFloat methods for irrationals 
-function MultiFloat{T,N}(x::Irrational{S}) where {S,T,N} 
-    MultiFloat{T,N}(BigFloat(x; precision = precision(MultiFloat{T,N})))
-end 
+    #Global Gurobi license reference to support test on 
+    #machines with a fixed number of licenses 
+    const GRB_ENV_REF = Ref{Gurobi.Env}()
+
+    function __init__()
+        global GRB_ENV_REF
+        GRB_ENV_REF[] = Gurobi.Env()
+        return
+    end
+
+    #Additional solver configurations can be made to look like
+    #standalone solvers, e.g. a 128 bit version of Clarabel
+    #commented out but left for future reference
+    # module Clarabel128
+    #     using Clarabel, MultiFloats
+    #     Optimizer = Clarabel.Optimizer{Float64x2}
+    # end
+
+    #identical solver with different name.   Useful
+    #for benchmarking if configured with use_quad_obj = false
+    module ClarabelHSDE
+        using Clarabel
+        Optimizer = Clarabel.Optimizer
+    end
+    export ClarabelHSDE
+
+    #identical solver with different name.   Useful
+    #for benchmarking if configured with use_quad_obj = false
+    module ClarabelRsHSDE
+        using ClarabelRs
+        Optimizer = ClarabelRs.Optimizer
+    end
+    export ClarabelRsHSDE
+end

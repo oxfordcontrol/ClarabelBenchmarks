@@ -8,6 +8,6 @@ authors:
   given-names: "Yuwen"
   orcid: "https://orcid.org/0000-0001-8960-9725"
 title: "Clarabel solver Benchmark suite"
-version: 0.5.0
-date-released: 2023-07-25
+version: 0.8.0
+date-released: 2024-17-05
 url: "https://github.com/oxfordcontrol/ClarabelBenchmarks"

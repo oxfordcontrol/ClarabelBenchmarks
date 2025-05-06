@@ -23,6 +23,8 @@ $MODULE_OSQP,\
 $MODULE_SCS,\
 $MODULE_HiGHS,\
 $MODULE_Hypatia,\
+$MODULE_ClarabelHSDE,\
+$MODULE_ClarabelRsHSDE,\
 "
 
 #makes a slurm configuration file and calls sbatch

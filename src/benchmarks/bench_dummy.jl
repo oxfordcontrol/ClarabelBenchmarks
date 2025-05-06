@@ -3,9 +3,8 @@
 # include any solvers you want to test 
 using ClarabelBenchmarks, DataFrames
 
-using MosekTools, Clarabel, ClarabelRs, Gurobi, ECOS, OSQP, SCS, HiGHS, Hypatia, Tulip
-
-solvers = [Clarabel, ClarabelRs, Gurobi, ECOS, OSQP, SCS, HiGHS, Hypatia, Tulip, Mosek]
+using MosekTools, Clarabel, ClarabelRs, Gurobi, ECOS, HiGHS
+solvers = [MosekTools, Clarabel, ClarabelRs, Gurobi, ECOS, HiGHS]
 tag     = nothing
 class   = "dummy"
 verbose = false

@@ -2,7 +2,7 @@
 
 # include any solvers you want to test 
 using ClarabelBenchmarks, DataFrames, JLD2
-using Clarabel, ECOS, Hypatia
+using Clarabel, ECOS
 using Gurobi, MosekTools
 using ClarabelRs
 
@@ -17,5 +17,7 @@ plotlist = solvers
 df = ClarabelBenchmarks.benchmark(
     solvers, class;
     time_limit = time_limit,
-    verbose = verbose, tag = tag, rerun = rerun,
+    verbose = verbose, 
+    tag = tag, 
+    rerun = rerun,
     plotlist = plotlist)

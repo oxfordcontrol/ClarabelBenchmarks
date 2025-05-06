@@ -9,12 +9,14 @@ solvers = [Mosek,ClarabelRs]
 tag     = nothing
 class   = "sdplib"
 verbose = false
-time_limit = 300.
+time_limit = 1800.
 rerun = false
 plotlist = solvers
 
 df = ClarabelBenchmarks.benchmark(
     solvers, class;
     time_limit = time_limit,
-    verbose = verbose, tag = tag, rerun = rerun,
+    verbose = verbose, 
+    tag = tag, 
+    rerun = rerun,
     plotlist = plotlist)

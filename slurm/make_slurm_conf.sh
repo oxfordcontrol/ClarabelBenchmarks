@@ -5,7 +5,7 @@ TASKS_PER_NODE=2
 
 # default subdirectory of ...results/jld2 for outputs.  Overrideable
 # by setting $BENCHMARK_RESULTS_OUTPUTDIR
-BENCHMARK_RESULTS_OUTPUTDIR_DEFAULT="chordal_faer"
+BENCHMARK_RESULTS_OUTPUTDIR_DEFAULT="paperV1"
 
 # default slurm partitiont.  Overrideable by setting $BENCHMARK_SLURM_PARTITION                                                                                     
 BENCHMARK_SLURM_PARTITION_DEFAULT="short"
@@ -32,8 +32,10 @@ content="#!/bin/bash
 #SBATCH --mail-user=paul.goulart@eng.ox.ac.uk
 #SBATCH --partition="$BENCHMARK_SLURM_PARTITION"
 # #SBATCH --exclusive
-#SBATCH --mem-per-cpu=64G
+#SBATCH --mem=16G
+# #SBATCH --array="1,2"
 #SBATCH --array="$BENCHMARK_SOLVER_ARRAY"
+#SBATCH --cpu-freq=performance
 
 #load modules and define julia package env variables
 source preamble.sh
@@ -41,7 +43,7 @@ source preamble.sh
 #configure JLD2 target subdirectory 
 export BENCHMARK_RESULTS_OUTPUTDIR="$BENCHMARK_RESULTS_OUTPUTDIR"
 
-$DATA/julia -t $TASKS_PER_NODE arc_bench_script.jl
+julia -t $TASKS_PER_NODE arc_bench_script.jl
 "
 
 #dump the julia / rust branches

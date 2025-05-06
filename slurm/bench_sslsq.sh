@@ -4,13 +4,13 @@
 source modules.sh
 
 #the benchmark tests to run
-export BENCHMARK_CLASS_KEY="maros"
+export BENCHMARK_CLASS_KEY="sslsq"
 
 #the time limit for individual problems
 export BENCHMARK_PROBLEM_TIME_LIMIT=300
 
 #total runtime timeout per solver for this set of problems
-export BENCHMARK_SLURM_TIME_LIMIT=06:00:00
+export BENCHMARK_SLURM_TIME_LIMIT=12:00:00
 
 #the list of solvers to test   
 export BENCHMARK_SOLVER_ARRAY="\
@@ -23,6 +23,8 @@ $MODULE_OSQP,\
 $MODULE_SCS,\
 $MODULE_HiGHS,\
 $MODULE_Hypatia,\
+$MODULE_ClarabelHSDE,\
+$MODULE_ClarabelRsHSDE,\
 "
 
 #makes a slurm configuration file and calls sbatch

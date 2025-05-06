@@ -1,11 +1,12 @@
 # Portions of this code are modified from Convex.jl,
 # which is available under an MIT license (see LICENSE).
 
-using JuMP, DataFrames, MathOptInterface
+using JuMP, DataFrames
 using MathOptInterface
 using Clarabel
 using Distributed
 using PrettyTables, Printf
+using Gurobi
 
 const MOI = MathOptInterface
 
@@ -224,6 +225,7 @@ function remote_package_reload(optimizer_symbol)
 
     println("calling remote_package_reload with ", optimizer_symbol)
 
+    # eval(quote @everywhere using Pardiso end)
     eval(quote @everywhere using ClarabelBenchmarks end)
     eval(quote @everywhere using JuMP end)
 
@@ -231,45 +233,14 @@ function remote_package_reload(optimizer_symbol)
 
 end
 
-function remote_package_reload_local(optimizer_symbol)
-
-    println("calling remote_package_reload_local with ", optimizer_symbol)
-
-    eval(quote using ClarabelBenchmarks end)
-    eval(quote using JuMP end)
-
-    eval(quote using $optimizer_symbol end)
-
-end
-
 function remote_solve_dummies(optimizer_factory,settings)
 
     println("calling remote_solve_dummies with ", optimizer_factory)
-    expr = quote ClarabelBenchmarks.run_dummy_problems_inner($optimizer_factory,$settings) end 
+    expr = quote ClarabelBenchmarks.run_dummy_problems_inner($optimizer_factory, $settings) end 
     eval(quote @everywhere $expr end)
 end
 
-function remote_solve_dummies_local(optimizer_factory,settings)
-
-    println("calling remote_solve_dummies with ", optimizer_factory)
-    for test = values(ClarabelBenchmarks.PROBLEMS["dummy"])
-        #try to solve.   If it fails, just move on
-        #since we're just trying to force compilation.
-        #note solvers will fail on these problems if they 
-        #don't support the necessary cone types
-        model = get_typed_model(optimizer_factory)
-        set_silent(model)
-        for (key,val) in settings 
-            set_optimizer_attribute(model, string(key), val)
-        end
-        try 
-            test(model)
-        catch
-        end
-    end
-end
-
-function run_dummy_problems_inner(optimizer_factory,settings)
+function run_dummy_problems_inner(optimizer_factory, settings)
 
     if myid() == 1
         return
@@ -281,17 +252,24 @@ function run_dummy_problems_inner(optimizer_factory,settings)
         #since we're just trying to force compilation.
         #note solvers will fail on these problems if they 
         #don't support the necessary cone types
-        model = get_typed_model(optimizer_factory)
+
+	model = get_typed_model(optimizer_factory)
         set_silent(model)
-        for (key,val) in settings 
-            set_optimizer_attribute(model, string(key), val)
-        end
+	remote_apply_settings(model,settings)
+
         try 
             test(model)
         catch
         end
     end
-end 
+end
+
+function remote_apply_settings(model,settings)
+
+    for (key,val) in settings
+        set_optimizer_attribute(model, string(key), val)
+    end
+end
 
 function remote_solve(time_limit,classkey,test_name,optimizer_factory,settings,verbose)
 
@@ -305,10 +283,8 @@ function remote_solve(time_limit,classkey,test_name,optimizer_factory,settings,v
         unset_silent(model); 
     end
     
-    for (key,val) in settings 
-        set_optimizer_attribute(model, string(key), val)
-    end
-    
+    remote_apply_settings(model,settings)
+
     #not all solver support setting time limits. Looking at you, ECOS.
     try
         set_time_limit_sec(model, time_limit)
@@ -332,7 +308,15 @@ function get_typed_model(optimizer_factory)
     # which in turn require direct use of JuMP GenericModels.   Handle this case separately 
     # Some care is required though because Mosek.Optimizer is a function called "Optimizer", 
     # instead of a subtype of AbstractOptimizer.  The equivalent Mosek subtype is 
-    # MosekTools.Optimizer, which probably should have been used everywhere instead.  
+    # MosekTools.Optimizer, which probably should have been used everywhere instead. 
+    
+    # this fixes a problem where Gurobi thinks it as checked out the same 
+    # license multiple times 
+
+    if optimizer_factory == Gurobi.Optimizer
+            println("GUROBI_ENV is ", GRB_ENV_REF[])
+            return JuMP.Model(() -> Gurobi.Optimizer(GRB_ENV_REF[]))
+    end
 
     if !isa(optimizer_factory,Function)
         if optimizer_factory <: Clarabel.Optimizer 
@@ -584,9 +568,8 @@ function benchmark(packages, classkey; exclude = Regex[], time_limit = Inf,
     #tabulated results data 
     filename = "bench_" * device * classkey * "_detail_table.tex"
     filename = joinpath(get_path_results_tables(),filename)
-    tables = build_results_tables(df)
+    tables = build_results_tables(df, ok_status = ok_status)
     write_results_tables(tables,filename; gpu_test=gpu_test)
-
 
     return df
 
@@ -620,11 +603,15 @@ function write_sgm_table_file(filename,out; gpu_test = false)
 
 end
 
-function build_results_tables(df)
+function build_results_tables(df; ok_status = nothing)
 
     problems = unique(df.problem)
     solvers = unique(df.solver)
     group = unique(df.group)[1]
+
+    if(isnothing(ok_status))
+        ok_status = ["OPTIMAL"]
+    end
 
     #remove problems that are not in the current benchmark set 
     #this will weed out some other results that were disabled
@@ -674,7 +661,7 @@ function build_results_tables(df)
 
         iters      = df[df.problem .== problem .&& df.solver .== solver,:iterations][1]
         total_time = df[df.problem .== problem .&& df.solver .== solver,:solve_time][1]
-        is_ok      = df[df.problem .== problem .&& df.solver .== solver,:status][1] .== "OPTIMAL"
+        is_ok      = df[df.problem .== problem .&& df.solver .== solver,:status][1] ∈ ok_status
 
         if(is_ok)
             

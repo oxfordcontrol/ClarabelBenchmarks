@@ -19,7 +19,7 @@ module ClarabelBenchmarks
 
     # hard socps are handled separately since they are defined 
     # by gathering up a subset of problems defined above 
-    #include("./problem_sets/hard_socp/include_hard_socp.jl")
+    include("./problem_sets/hard_socp/include_hard_socp.jl")
 
     #plotting functions 
     include("./performance_profile.jl")

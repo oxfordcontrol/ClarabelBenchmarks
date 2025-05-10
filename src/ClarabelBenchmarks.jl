@@ -6,23 +6,20 @@ module ClarabelBenchmarks
     #benchmark standard settings for each solver type
     include("./benchmarks/solver_config.jl")
 
-    #fake problems for compiler warmup 
-    include("./problem_sets/dummy/dummy.jl")
 
-    #add new categories and problems here
-    include("./problem_sets/maros/include.jl")
-    include("./problem_sets/netlib/include.jl")
-    include("./problem_sets/cblib/include.jl")
-    include("./problem_sets/lp/include.jl")
-    include("./problem_sets/qp/include.jl")
-    include("./problem_sets/socp/include.jl")
-    include("./problem_sets/sos/include.jl")
-    include("./problem_sets/pow/include.jl")
-    include("./problem_sets/sslsq/include.jl")
-    include("./problem_sets/mpc/include.jl")
-    include("./problem_sets/opf/include.jl")
-    include("./problem_sets/hard_socp/include.jl")
-    include("./problem_sets/sdplib/include.jl")
+    #look in problem_sets for directories with include.jl files
+    problem_sets_dir = joinpath(@__DIR__, "problem_sets")
+    for dir in readdir(problem_sets_dir)
+        println("including problem set: ", dir)
+        include_file = joinpath(problem_sets_dir, dir, "include.jl")
+        if isdir(joinpath(problem_sets_dir, dir)) && isfile(include_file)
+            include(include_file)
+        end
+    end
+
+    # hard socps are handled separately since they are defined 
+    # by gathering up a subset of problems defined above 
+    #include("./problem_sets/hard_socp/include_hard_socp.jl")
 
     #plotting functions 
     include("./performance_profile.jl")

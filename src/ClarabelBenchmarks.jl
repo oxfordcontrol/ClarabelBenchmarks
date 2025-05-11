@@ -10,7 +10,6 @@ module ClarabelBenchmarks
     #look in problem_sets for directories with include.jl files
     problem_sets_dir = joinpath(@__DIR__, "problem_sets")
     for dir in readdir(problem_sets_dir)
-        println("including problem set: ", dir)
         include_file = joinpath(problem_sets_dir, dir, "include.jl")
         if isdir(joinpath(problem_sets_dir, dir)) && isfile(include_file)
             include(include_file)

@@ -9,11 +9,11 @@ using HiGHS
 using Hypatia  
 using ClarabelBenchmarks.ClarabelGPU,ClarabelBenchmarks.MosekWithPresolve
 
-solvers = [ClarabelGPU,Gurobi,MosekWithPresolve]
+solvers = [ClarabelGPU,Mosek,MosekWithPresolve]
 tag     = nothing
-class   = "large_qp"
-verbose = false
-time_limit = 500.
+class   = "sdp_fem"
+verbose = true
+time_limit = 1000.
 rerun = false
 plotlist = solvers
 ok_status = ["OPTIMAL"]

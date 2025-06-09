@@ -109,6 +109,7 @@ function run_benchmarks_inner(
         flush(Base.stdout)
         flush(Base.stderr)
 
+        GC.gc()
     end
 
     return post_process_benchmarks(groups)
@@ -203,7 +204,7 @@ end
 function solve_with_timeout_local(time_limit,classkey,test_name,optimizer_factory,settings,verbose)
 
     #force reload modules and precompile 
-    remote_package_reload_local(Symbol(solver_module(optimizer_factory)))
+    remote_package_reload(Symbol(solver_module(optimizer_factory)))
     # remote_solve_dummies_local(optimizer_factory,settings)
 
     solution = remote_solve(time_limit,classkey,test_name,optimizer_factory,settings,verbose)
@@ -447,7 +448,7 @@ function get_path_results_tables()
     mkpath(joinpath(get_path_results(),"tables"))
 end
 
-function run_benchmark!(package, classkey; exclude = Regex[], time_limit = Inf, verbose = false, tag = nothing, rerun = false, machine = :local)
+function run_benchmark!(package, classkey; exclude = Regex[], time_limit = Inf, verbose = false, tag = nothing, rerun = false, machine = :local, gpu_test = false)
 
     filename = "bench_" * classkey * "_" * String(Symbol(package)) * ".jld2"
     savefile = joinpath(get_path_results_jld2(),filename)
@@ -455,7 +456,7 @@ function run_benchmark!(package, classkey; exclude = Regex[], time_limit = Inf, 
     #gather some basic system information
     cpu_model = Sys.cpu_info()[1].model
     host_name = gethostname()
-    solver_config = ClarabelBenchmarks.SOLVER_CONFIG
+    solver_config = gpu_test ? ClarabelBenchmarks.SOLVER_CONFIG_GPU : ClarabelBenchmarks.SOLVER_CONFIG
 
 
     if isfile(savefile)

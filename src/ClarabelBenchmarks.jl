@@ -10,9 +10,10 @@ module ClarabelBenchmarks
 
     # main test function and problem def macros live here 
     include("./tools.jl")
+    include("./tools_gpu.jl")
 
     #benchmark standard settings for each solver type
-    include("./benchmarks/solver_config.jl")
+    include("./benchmarks/solver_config_gpu.jl")
 
     #fake problems for compiler warmup 
     include("./problem_sets/dummy/dummy.jl")
@@ -34,6 +35,9 @@ module ClarabelBenchmarks
     include("./problem_sets/exp/include.jl")
     include("./problem_sets/mittelmann/include.jl")
 
+    #Specific GPU tests
+    include("./problem_sets/fem/include.jl")
+    
     #plotting functions 
     include("./performance_profile.jl")
 

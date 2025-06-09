@@ -38,9 +38,11 @@ function cblib_get_test_names_large()
     for group = groups
         srcpath = joinpath(targets_path,group,"large/")
 
-        #gets the name of the data files in this group
-        files = filter(endswith(".cbf.gz"), readdir(srcpath))
-        append!(pairs, [ (group => splitext(splitext(f)[1])[1]) for f in files])
+        if ispath(srcpath)
+            #gets the name of the data files in this group
+            files = filter(endswith(".cbf.gz"), readdir(srcpath))
+            append!(pairs, [ (group => splitext(splitext(f)[1])[1]) for f in files])
+        end
     end
     return pairs
 end

@@ -8,7 +8,6 @@ function multistages_portfolio_optimization(model::GenericModel{T}, horizon) whe
     # Model dimensions
     k = 50 # Number of risk factors
     n = k * 100 # Number of assets (same as the original single-period model)
-    horizon = 10 # Number of time periods in the multi-period optimization
 
     # Generate asset-specific risk vector (idiosyncratic risks)
     # Each element represents the specific risk for each asset, scaled by sqrt(k)

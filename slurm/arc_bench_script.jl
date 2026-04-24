@@ -15,7 +15,8 @@ package_str = ENV["MODULE_NUMBER_" * string(task_id)]
 if package_str == "Mosek"
    using MosekTools
 
-elseif package_str ∈ ["Clarabel128", "ClarabelHSDE", "ClarabelRsHSDE"]
+elseif package_str ∈ ["Clarabel128", "ClarabelHSDE", "ClarabelRsHSDE", 
+                        "ClarabelNonchordal", "ClarabelRsNonchordal"]
    using Clarabel
 else
    eval(Meta.parse("using " * package_str))

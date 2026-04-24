@@ -67,3 +67,11 @@ SOLVER_CONFIG[:Hypatia] = SettingsDict(
 SOLVER_CONFIG[:Tulip] = SettingsDict(
     :Presolve_Level => 0
 )
+
+#SeDuMi
+SOLVER_CONFIG[:SeDuMi] = SettingsDict(
+)
+
+#SDPT3
+SOLVER_CONFIG[:SDPT3] = SettingsDict(
+)

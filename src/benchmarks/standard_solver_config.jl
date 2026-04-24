@@ -55,7 +55,10 @@ SOLVER_CONFIG[:SCS] = SettingsDict(
 
 #HiGHS
 SOLVER_CONFIG[:HiGHS] = SettingsDict(
-    :presolve => "off"
+    :presolve => "off",
+    :threads => 1,
+    :run_crossover = "off",
+    :solver = "ipm"
 )
 
 #Hypatia
@@ -65,4 +68,12 @@ SOLVER_CONFIG[:Hypatia] = SettingsDict(
 #Tulip
 SOLVER_CONFIG[:Tulip] = SettingsDict(
     :Presolve_Level => 0
+)
+
+#SeDuMi
+SOLVER_CONFIG[:SeDuMi] = SettingsDict(
+)
+
+#SDPT3
+SOLVER_CONFIG[:SDPT3] = SettingsDict(
 )

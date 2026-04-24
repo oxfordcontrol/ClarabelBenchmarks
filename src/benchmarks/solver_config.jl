@@ -2,10 +2,16 @@
 # all benchmarks using this file for configuring 
 # individual solvers:
 
-SettingsDict  = Dict{Symbol,Any}
+SettingsDict = Dict{Symbol,Any}
 SOLVER_CONFIG = Dict{Symbol,SettingsDict}()
 
 #---------------------------------------------
+
+# using Pardiso   #commented out since otherwise it will always be used 
+ENV["OMP_NUM_THREADS"] = "16"
+ENV["PARDISO_PATH"] = "~/software/panua/lib/"
+ENV["MKL_PARDISO_PATH"] = "/opt/intel/oneapi/mkl/latest/lib/"
+
 
 #Clarabel (Julia version )
 SOLVER_CONFIG[:Clarabel] = SettingsDict(
@@ -26,8 +32,17 @@ SOLVER_CONFIG[Symbol("ClarabelBenchmarks.ClarabelRsHSDE")][:use_quad_obj] = fals
 
 #Clarabel (128 bit version )
 SOLVER_CONFIG[Symbol("ClarabelBenchmarks.Clarabel128")] = SettingsDict(
-    :max_iter => 500,	
+    :max_iter => 500,
 )
+
+#Clarabel (Julia version, no chordal )
+SOLVER_CONFIG[Symbol("ClarabelBenchmarks.ClarabelNonchordal")] = deepcopy(SOLVER_CONFIG[:Clarabel])
+SOLVER_CONFIG[Symbol("ClarabelBenchmarks.ClarabelNonchordal")][:chordal_decomposition_enable] = false
+
+#Clarabel (Rust version, no chordal )
+SOLVER_CONFIG[Symbol("ClarabelBenchmarks.ClarabelRsNonchordal")] = deepcopy(SOLVER_CONFIG[:ClarabelRs])
+SOLVER_CONFIG[Symbol("ClarabelBenchmarks.ClarabelRsNonchordal")][:chordal_decomposition_enable] = false
+
 
 #ECOS
 SOLVER_CONFIG[:ECOS] = SettingsDict(
@@ -42,7 +57,9 @@ SOLVER_CONFIG[:Mosek] = SettingsDict(
 #Gurobi 
 SOLVER_CONFIG[:Gurobi] = SettingsDict(
     :presolve => false,
-    :Threads => 1
+    :Threads => 1,
+    :Method => 2,   #barrier method always
+    :Crossover => 0 #crossover disabled always
 )
 
 #OSQP
@@ -59,6 +76,8 @@ SOLVER_CONFIG[:SCS] = SettingsDict(
 SOLVER_CONFIG[:HiGHS] = SettingsDict(
     :presolve => "off",
     :threads => 1,
+    :run_crossover => "off",
+    #:solver = "ipm"
 )
 
 #Hypatia
@@ -68,4 +87,12 @@ SOLVER_CONFIG[:Hypatia] = SettingsDict(
 #Tulip
 SOLVER_CONFIG[:Tulip] = SettingsDict(
     :Presolve_Level => 0
+)
+
+#SeDuMi
+SOLVER_CONFIG[:SeDuMi] = SettingsDict(
+)
+
+#SDPT3
+SOLVER_CONFIG[:SDPT3] = SettingsDict(
 )

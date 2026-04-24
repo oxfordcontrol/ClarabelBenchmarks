@@ -18,7 +18,12 @@ export BENCHMARK_SLURM_PARTITION="short"
 #the list of solvers to test   
 export BENCHMARK_SOLVER_ARRAY="\
 $MODULE_ClarabelRs,\
+$MODULE_ClarabelRsNonchordal,\
+$MODULE_Clarabel,\
+$MODULE_ClarabelNonchordal,\
 $MODULE_Mosek,\
+$MODULE_SeDuMi,\
+$MODULE_SDPT3,\
 "
 
 #makes a slurm configuration file and calls sbatch

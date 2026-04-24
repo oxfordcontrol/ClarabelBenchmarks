@@ -41,6 +41,10 @@ macro add_problem(group_name, test_name, q)
     end
 end
 
+function flush_problems()
+    empty!(PROBLEMS)
+end
+
 function solve_generic(fcn, model, args...; solve = true)
 
     if !isa(model, GenericModel) 
@@ -210,6 +214,7 @@ function remote_package_reload(optimizer_symbol)
 
     # eval(quote @everywhere using Pardiso end)
     eval(quote @everywhere using ClarabelBenchmarks end)
+    eval(quote @everywhere include(joinpath(@__DIR__,"benchmarks/solver_config.jl")) end)
     eval(quote @everywhere using JuMP end)
 
     eval(quote @everywhere using $optimizer_symbol end)

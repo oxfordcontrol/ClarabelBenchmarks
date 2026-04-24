@@ -9,7 +9,7 @@ function portfolio_optimization(model::GenericModel{T}, n, γ = one(T)) where{T}
     #problem dimensions wrt n
     p = T(0.125)
     k = ceil(Int,0.1 * n)
-    density = T(0.5)
+    density = T(0.3)
 
     F = sprandn(rng, T, n, k, density)
     d = rand(rng,n).*sqrt(k) 
@@ -28,7 +28,7 @@ end
 
 #generate problems according to problem type and size 
 
-for n in [100, 1000, 5000]
+for n in [100, 1000, 5000, 10000, 15000, 20000, 25000, 30000]
 
     group_name = "qp"
     test_name  = "portfolio_optimization_n_" * string(n)

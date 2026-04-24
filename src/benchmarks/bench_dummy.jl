@@ -5,6 +5,7 @@ using ClarabelBenchmarks, DataFrames
 
 using MosekTools, Clarabel, ClarabelRs, Gurobi, ECOS, HiGHS
 solvers = [MosekTools, Clarabel, ClarabelRs, Gurobi, ECOS, HiGHS]
+solvers = [Clarabel]
 tag     = nothing
 class   = "dummy"
 verbose = false

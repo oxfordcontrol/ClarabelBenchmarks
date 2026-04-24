@@ -40,6 +40,50 @@ end
     solve_generic(build, model; kwargs...)
 end
 
+@add_problem dummy socp2 function dummy_socp2(
+    model; kwargs...
+)
+
+    function build(model)
+        @variable(model, x[1:3])
+        @variable(model, y[1:3])
+        @constraint(model, x in SecondOrderCone())
+        @constraint(model, y in SecondOrderCone())
+        @objective(model, Min, x[1]^2 + 2*x[2]^2 + 3*x[3]^2 + x[1] + x[2] + 4*y[1]^2 + 5*y[2]^2 + 6*y[3]^2 - y[1] + y[3])
+    end
+
+    solve_generic(build, model; kwargs...)
+end
+
+@add_problem dummy socp3 function dummy_socp3(
+    model; kwargs...
+)
+
+    function build(model)
+        @variable(model, x[1:5])
+        @variable(model, y[1:5])
+        @constraint(model, x in SecondOrderCone())
+        @constraint(model, y in SecondOrderCone())
+        @objective(model, Min, x[1]^2 + 2*x[2]^2 + 3*x[3]^2 + 2*x[4]^2 + x[5]^2+ x[1] + x[2] + 4*y[1]^2 + 5*y[2]^2 + 6*y[3]^2 + 5*y[4]^2 + 3*y[5]^2 - y[1] + y[3])
+    end
+
+    solve_generic(build, model; kwargs...)
+end
+
+@add_problem dummy socp4 function dummy_socp4(
+    model; kwargs...
+)
+
+    function build(model)
+        @variable(model, x[1:5])
+        @constraint(model, x in SecondOrderCone())
+        @objective(model, Min, x[1]^2 + 2*x[2]^2 + 3*x[3]^2 + 2*x[4]^2 + x[5]^2+ x[1] + x[2])
+    end
+
+    solve_generic(build, model; kwargs...)
+end
+
+
 @add_problem dummy expcone function dummy_expcone(
     model; kwargs...
 )

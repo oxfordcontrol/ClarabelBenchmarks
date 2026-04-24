@@ -25,6 +25,8 @@ $MODULE_HiGHS,\
 $MODULE_Hypatia,\
 $MODULE_ClarabelHSDE,\
 $MODULE_ClarabelRsHSDE,\
+$MODULE_SeDuMi,\
+$MODULE_SDPT3
 "
 
 #makes a slurm configuration file and calls sbatch

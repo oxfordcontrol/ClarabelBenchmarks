@@ -9,7 +9,7 @@ end
 struct JsonProblemData{T}
     P::SparseMatrixCSC{T,Int}
     q::Vector{T}
-    A::SparseMatrixCSC{T,Int}
+    AT::SparseMatrixCSC{T,Int}
     b::Vector{T}
     cones::Vector{JsonConeSpec}
 end
@@ -24,17 +24,54 @@ json_target_path(test_name) = joinpath(@__DIR__, "targets", test_name * ".json")
 
 json_triangle_number(dim::Integer) = dim * (dim + 1) ÷ 2
 
-function json_parse_sparse_matrix(data, ::Type{T}) where {T}
-    return SparseMatrixCSC(
-        Int(data["m"]),
-        Int(data["n"]),
-        convert(Vector{Int}, data["colptr"]) .+ 1,
-        convert(Vector{Int}, data["rowval"]) .+ 1,
-        convert(Vector{T}, data["nzval"]),
-    )
+function json_parse_vector(data, ::Type{T}) where {T}
+    values = Vector{T}(undef, length(data))
+    @inbounds for i in eachindex(data)
+        values[i] = T(data[i])
+    end
+    return values
 end
 
-json_parse_vector(data, ::Type{T}) where {T} = convert(Vector{T}, data)
+function json_parse_sparse_matrix(data, ::Type{T}) where {T}
+    raw_colptr = data["colptr"]
+    raw_rowval = data["rowval"]
+    raw_nzval = data["nzval"]
+    n = Int(data["n"])
+
+    colptr = Vector{Int}(undef, n + 1)
+    rowval = Vector{Int}(undef, length(raw_rowval))
+    nzval = Vector{T}(undef, length(raw_nzval))
+
+    colptr[1] = 1
+    nnz = 0
+
+    @inbounds for col in 1:n
+        start_idx = Int(raw_colptr[col]) + 1
+        stop_idx = Int(raw_colptr[col + 1])
+
+        for idx in start_idx:stop_idx
+            value = T(raw_nzval[idx])
+            if !iszero(value)
+                nnz += 1
+                rowval[nnz] = Int(raw_rowval[idx]) + 1
+                nzval[nnz] = value
+            end
+        end
+
+        colptr[col + 1] = nnz + 1
+    end
+
+    resize!(rowval, nnz)
+    resize!(nzval, nnz)
+
+    return SparseMatrixCSC(
+        Int(data["m"]),
+        n,
+        colptr,
+        rowval,
+        nzval,
+    )
+end
 
 function json_parse_cones(cone_data, test_name)
     cones = JsonConeSpec[]
@@ -92,24 +129,84 @@ function json_load_data(test_name, ::Type{T}) where {T}
     size(A, 1) == length(b) || error("A and b size mismatch in JSON problem $(test_name).")
     cone_rows == length(b) || error("Cone dimensions do not match b in JSON problem $(test_name).")
 
-    return JsonProblemData{T}(P, q, A, b, cones)
+    return JsonProblemData{T}(P, q, SparseMatrixCSC(transpose(A)), b, cones)
 end
 
-function json_add_cone_constraint(model, x, A, b, rows::UnitRange{Int}, cone::JsonConeSpec)
+function json_cone_set(cone::JsonConeSpec)
     if cone.kind == :ZeroConeT
-        @constraint(model, b[rows] - A[rows, :] * x in MOI.Zeros(cone.dim))
+        return MOI.Zeros(cone.dim)
     elseif cone.kind == :NonnegativeConeT
-        @constraint(model, b[rows] - A[rows, :] * x in MOI.Nonnegatives(cone.dim))
+        return MOI.Nonnegatives(cone.dim)
     elseif cone.kind == :SecondOrderConeT
-        @constraint(model, b[rows] - A[rows, :] * x in MOI.SecondOrderCone(cone.dim))
+        return MOI.SecondOrderCone(cone.dim)
     elseif cone.kind == :PSDTriangleConeT
-        @constraint(
-            model,
-            b[rows] - A[rows, :] * x in MOI.Scaled(MOI.PositiveSemidefiniteConeTriangle(cone.dim)),
-        )
-    else
-        error("Internal error: unsupported cone $(cone.kind).")
+        return MOI.Scaled(MOI.PositiveSemidefiniteConeTriangle(cone.dim))
     end
+
+    error("Internal error: unsupported cone $(cone.kind).")
+end
+
+function json_make_cone_function(
+    AT::SparseMatrixCSC{T,Int},
+    x_indices::Vector{MOI.VariableIndex},
+    b::Vector{T},
+    row_start::Int,
+    cone::JsonConeSpec,
+) where {T}
+    row_stop = row_start + cone.rowdim - 1
+    nnz = 0
+
+    @inbounds for row in row_start:row_stop
+        nnz += AT.colptr[row + 1] - AT.colptr[row]
+    end
+
+    terms = Vector{MOI.VectorAffineTerm{T}}(undef, nnz)
+    term_idx = 0
+    local_row = 0
+
+    @inbounds for row in row_start:row_stop
+        local_row += 1
+        for idx in AT.colptr[row]:(AT.colptr[row + 1] - 1)
+            term_idx += 1
+            terms[term_idx] = MOI.VectorAffineTerm(
+                local_row,
+                MOI.ScalarAffineTerm(-AT.nzval[idx], x_indices[AT.rowval[idx]]),
+            )
+        end
+    end
+
+    constants = copy(@view b[row_start:row_stop])
+    return MOI.VectorAffineFunction(terms, constants)
+end
+
+function json_set_objective(
+    model::GenericModel{T},
+    x,
+    x_indices::Vector{MOI.VariableIndex},
+    P::SparseMatrixCSC{T,Int},
+    q::Vector{T},
+) where {T}
+    if nnz(P) == 0
+        linear_terms = Vector{MOI.ScalarAffineTerm{T}}(undef, length(q))
+        term_idx = 0
+
+        @inbounds for i in eachindex(q)
+            coeff = q[i]
+            if !iszero(coeff)
+                term_idx += 1
+                linear_terms[term_idx] = MOI.ScalarAffineTerm(coeff, x_indices[i])
+            end
+        end
+
+        resize!(linear_terms, term_idx)
+        objective = MOI.ScalarAffineFunction(linear_terms, zero(T))
+        backend = JuMP.backend(model)
+        MOI.set(backend, MOI.ObjectiveSense(), MOI.MIN_SENSE)
+        MOI.set(backend, MOI.ObjectiveFunction{typeof(objective)}(), objective)
+    else
+        @objective(model, Min, dot(q, x) + T(1 / 2) * x' * Symmetric(P, :U) * x)
+    end
+
     return nothing
 end
 
@@ -117,15 +214,17 @@ function json_load(model::GenericModel{T}, test_name) where {T}
     data = json_load_data(test_name, T)
 
     @variable(model, x[1:length(data.q)])
-    @objective(model, Min, dot(data.q, x) + T(1 / 2) * x' * Symmetric(data.P, :U) * x)
+    x_indices = JuMP.index.(x)
+    json_set_objective(model, x, x_indices, data.P, data.q)
+    backend = JuMP.backend(model)
 
     row_start = 1
     for cone in data.cones
         if cone.rowdim == 0
             continue
         end
-        rows = row_start:(row_start + cone.rowdim - 1)
-        json_add_cone_constraint(model, x, data.A, data.b, rows, cone)
+        function_data = json_make_cone_function(data.AT, x_indices, data.b, row_start, cone)
+        MOI.add_constraint(backend, function_data, json_cone_set(cone))
         row_start += cone.rowdim
     end
 
